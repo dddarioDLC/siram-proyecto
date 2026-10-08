@@ -600,7 +600,6 @@
       <ul class="subnav">
         <li><button class="nav-item sub" data-goto="v-bandeja"><span class="dot"></span><span class="lbl">Bandeja</span></button></li>
         <li><button class="nav-item sub na" title="En diseño"><span class="dot"></span><span class="lbl">Nuevo caso</span></button></li>
-        <li><button class="nav-item sub na" title="En diseño"><span class="dot"></span><span class="lbl">Pendientes de validación</span><span class="nav-count">14</span></button></li>
         <li><button class="nav-item sub na" title="En diseño"><span class="dot"></span><span class="lbl">Posibles duplicados</span><span class="nav-count">8</span></button></li>
         <li><button class="nav-item sub na" title="En diseño"><span class="dot"></span><span class="lbl">Eventos relacionados</span><span class="nav-count">5</span></button></li>
         <li><button class="nav-item sub na" title="En diseño"><span class="dot"></span><span class="lbl">Incompletos</span><span class="nav-count">23</span></button></li>
@@ -932,9 +931,9 @@
          style="--in-c:var(--info);--in-soft:var(--info-soft);">
         <svg class="in-ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 1.8"/></svg>
         <span class="in-body">
-          <span class="in-fig">14</span>
-          <span class="in-name">pendientes de validación</span>
-          <span class="in-meta">La más antigua espera hace 6 días</span>
+          <span class="in-fig">17</span>
+          <span class="in-name">casos esperando contacto</span>
+          <span class="in-meta">Hay que llamar a la persona para completar y verificar</span>
         </span>
         <svg class="in-go" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M12.5 6l6 6-6 6"/></svg>
       </a>
@@ -1153,7 +1152,7 @@
     <div class="panel in-card in-d">
       <h3 class="in-card-t">Origen del registro</h3>
       <p class="in-card-s"><span class="in-eyebrow">Cobertura</span> · quién carga los casos</p>
-      <svg class="in-chart" viewBox="0 0 380 210" role="img" aria-label="Origen del registro: Zoonosis Ushuaia 54 casos, 43 por ciento; Hospital Regional Río Grande 38 casos, 30 por ciento; canal ciudadano 26 casos, 20 por ciento; CADIC 9 casos, 7 por ciento. Escala de 0 a 54 casos.">
+      <svg class="in-chart" viewBox="0 0 380 210" role="img" aria-label="Origen del registro: Zoonosis Ushuaia 54 casos, 43 por ciento; Hospital Regional Río Grande 38 casos, 30 por ciento; Hospital Regional Ushuaia 26 casos, 20 por ciento; CADIC 9 casos, 7 por ciento. Escala de 0 a 54 casos.">
       <text class="in-lab in-lab-l" x="2" y="16">Zoonosis Ushuaia</text>
       <path class="in-bar" d="M2 26 L292 26 Q296 26 296 30 L296 36 Q296 40 292 40 L2 40 Z"/>
       <text class="in-val" x="306" y="38">54</text>
@@ -1162,7 +1161,7 @@
       <path class="in-bar" d="M2 70 L204.9 70 Q208.9 70 208.9 74 L208.9 80 Q208.9 84 204.9 84 L2 84 Z"/>
       <text class="in-val" x="306" y="82">38</text>
       <text class="in-val-2" x="336" y="82">30%</text>
-      <text class="in-lab in-lab-l" x="2" y="104">Canal ciudadano</text>
+      <text class="in-lab in-lab-l" x="2" y="104">Hospital Regional USH</text>
       <path class="in-bar" d="M2 114 L139.6 114 Q143.6 114 143.6 118 L143.6 124 Q143.6 128 139.6 128 L2 128 Z"/>
       <text class="in-val" x="306" y="126">26</text>
       <text class="in-val-2" x="336" y="126">20%</text>
@@ -1177,7 +1176,7 @@
       <text class="in-axt" x="2" y="220">casos registrados en 2026</text>
       </svg>
       <p class="in-note">No es un dato epidemiológico: dice qué organismos alimentan el
-        registro. El canal ciudadano aporta 26 casos que después hay que verificar.</p>
+        registro.</p>
     </div>
 
   </div>
@@ -1265,7 +1264,6 @@
         <button class="chip" aria-pressed="false">Incompletos <span class="n">(23)</span></button>
         <button class="chip" aria-pressed="false">Posibles duplicados <span class="n">(8)</span></button>
         <button class="chip" aria-pressed="false">Eventos relacionados <span class="n">(5)</span></button>
-        <button class="chip" aria-pressed="false">Sin confirmar <span class="n">(14)</span></button>
         <button class="chip" aria-pressed="false">En seguimiento <span class="n">(41)</span></button>
       </div>
 
@@ -1300,7 +1298,7 @@
               <td>Kuanip 1240<span class="t-sub">Ushuaia</span></td>
               <td>Perro<span class="t-sub">Mediano</span></td>
               <td>Mordedura</td>
-              <td><span class="estado"><span class="pt"></span>Sin confirmar</span></td>
+              <td><span class="estado"><span class="pt"></span>Registrado</span></td>
               <td><span class="origen">Zoonosis Ushuaia</span></td>
               <td class="col-acc"><button class="kebab" aria-label="Acciones del caso C-2026-0418"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button></td>
             </tr>
@@ -1337,7 +1335,7 @@
               <td>Gobernador Paz 910<span class="t-sub">Ushuaia</span></td>
               <td>Perro<span class="t-sub">Grande</span></td>
               <td>Mordedura</td>
-              <td><span class="estado e-confirmado"><span class="pt"></span>Confirmado</span></td>
+              <td><span class="estado"><span class="pt"></span>Registrado</span></td>
               <td><span class="origen">Hospital Regional Ushuaia</span></td>
               <td class="col-acc"><button class="kebab" aria-label="Acciones del caso C-2026-0416"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button></td>
             </tr>
@@ -1352,7 +1350,7 @@
               <td>Perito Moreno 320<span class="t-sub">Río Grande</span></td>
               <td>Perro<span class="t-sub">Chico</span></td>
               <td>Lesión compatible</td>
-              <td><span class="estado"><span class="pt"></span>Sin confirmar</span></td>
+              <td><span class="estado"><span class="pt"></span>Registrado</span></td>
               <td><span class="origen">CAPS 3</span></td>
               <td class="col-acc"><button class="kebab" aria-label="Acciones del caso C-2026-0415"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button></td>
             </tr>
@@ -1385,7 +1383,7 @@
               <td>Magallanes 77<span class="t-sub">Ushuaia</span></td>
               <td>Gato<span class="t-sub">Chico</span></td>
               <td>Arañazo</td>
-              <td><span class="estado e-confirmado"><span class="pt"></span>Confirmado</span></td>
+              <td><span class="estado"><span class="pt"></span>Registrado</span></td>
               <td><span class="origen">Zoonosis Ushuaia</span></td>
               <td class="col-acc"><button class="kebab" aria-label="Acciones del caso C-2026-0409"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button></td>
             </tr>
@@ -1446,7 +1444,7 @@
               <td>Maipú 1180<span class="t-sub">Ushuaia</span></td>
               <td>Perro<span class="t-sub">Chico</span></td>
               <td>Mordedura</td>
-              <td><span class="estado e-confirmado"><span class="pt"></span>Confirmado</span></td>
+              <td><span class="estado"><span class="pt"></span>Registrado</span></td>
               <td><span class="origen">Zoonosis Ushuaia</span></td>
               <td class="col-acc"><button class="kebab" aria-label="Acciones del caso C-2026-0388"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button></td>
             </tr>
@@ -1800,7 +1798,7 @@
     </button>
     <button class="btn-primary">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
-      Confirmar caso
+      Cambiar estado
     </button>
     <button class="kebab" aria-label="Más acciones del caso">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5.5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="18.5" r="1.6"/></svg>
@@ -1810,7 +1808,7 @@
 
 <!-- ============ banda de estado ============ -->
 <section class="panel fi-band" aria-label="Estado del caso">
-  <span class="estado"><span class="pt"></span>Sin confirmar</span>
+  <span class="estado"><span class="pt"></span>Registrado</span>
   <span class="origen">Zoonosis Ushuaia</span>
   <span class="fi-band-sep" aria-hidden="true"></span>
   <span class="fi-reg">Registrado por <b>M. Acosta</b> · <span class="mono">12/09/2026 15:02</span></span>
@@ -1833,7 +1831,7 @@
 
   <div class="fi-dup-body">
     <h2 id="fi-dup-t">Se detectó un caso con datos coincidentes</h2>
-    <p>El caso <a href="#" class="mono">C-2026-0402</a> (Zoonosis Ushuaia, 12/09/2026) comparte datos con este. Revisá ambos antes de confirmar.</p>
+    <p>El caso <a href="#" class="mono">C-2026-0402</a> (Hospital Regional Ushuaia, 13/09/2026) comparte datos con este. Revisá ambos antes de seguir.</p>
     <ul class="fi-signals">
       <li class="fi-signal">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A15 15 0 0 1 4 5a1 1 0 0 1 1-1"/></svg>
@@ -1943,8 +1941,8 @@
 
   <div class="fi-grid">
     <div class="fi-f">
-      <div class="fi-lab"><span class="fi-code">T1</span><span>Tipo de denuncia</span></div>
-      <div class="fi-val t-primary">Mordedura de ADC</div>
+      <div class="fi-lab"><span class="fi-code">T1</span><span>Tipo de evento</span></div>
+      <div class="fi-val t-primary">Ataque con mordedura</div>
     </div>
   </div>
 </fieldset>
@@ -2693,7 +2691,7 @@
         <span class="dup-sig-state" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12h12"/></svg></span>
         <span class="dup-sig-main">
           <span class="dup-sig-name">DNI <span class="dup-sr">— no evaluable</span></span>
-          <span class="dup-sig-ev">No evaluable: el formulario ciudadano no pide DNI</span>
+          <span class="dup-sig-ev">No evaluable: C-2026-0402 se cargó antes de que el DNI fuera obligatorio</span>
         </span>
         <span class="dup-weight">Señal decisiva</span>
       </li>
@@ -2725,22 +2723,18 @@
         <span class="dup-code">C-2026-0418</span>
         <span class="dup-org">Zoonosis Ushuaia</span>
         <div class="dup-meta">
-          <span class="estado"><span class="pt"></span>Sin confirmar</span>
+          <span class="estado"><span class="pt"></span>Registrado</span>
           <span class="dup-when">Registrado 12/09/2026</span>
         </div>
       </div>
       <div class="dup-spine" aria-hidden="true"><span class="dup-glyph"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v16M8 8l4-4 4 4M8 16l4 4 4-4"/></svg></span></div>
       <div class="dup-colhead b">
         <span class="dup-code">C-2026-0402</span>
-        <span class="dup-org">Canal ciudadano</span>
+        <span class="dup-org">Hospital Regional Ushuaia</span>
         <div class="dup-meta">
-          <span class="estado"><span class="pt"></span>Sin confirmar</span>
+          <span class="estado"><span class="pt"></span>Registrado</span>
           <span class="dup-when">Registrado 13/09/2026</span>
         </div>
-        <span class="dup-flag">
-          <span class="mark ciudadano" title="Origen ciudadano sin verificar">?</span>
-          Origen ciudadano sin verificar
-        </span>
       </div>
     </div>
 
@@ -3117,6 +3111,7 @@
 
 </div>
 </section>
+    <!-- Narrativa anterior (formulario público): sin acceso desde el menú desde 2026-10-08. Ver CONTEXTO §3 y RN-08. -->
     <section class="view" id="v-validacion" hidden>
 <style>
   /* ============================================================

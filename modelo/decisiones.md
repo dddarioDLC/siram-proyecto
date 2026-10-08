@@ -40,3 +40,27 @@ Lo mantiene el agente de diseño.
 - **El front no conoce el modelo**: trabaja contra la API (OpenAPI generada por el back) y recibe el
   lenguaje visual y el prototipo en `front/docs/`.
 - Las preguntas de `preguntas.md` pasan a ser del agente de backend.
+
+## 2026-10-08 · Versión 1: SIRAM trata casos
+
+Narrativa acordada por el equipo (CONTEXTO §3, «Narrativa de uso»): el caso lo registra siempre un
+agente interno, que carga los datos por la persona; la denuncia es un acto oficial del mundo real
+ante un ente (Zoonosis, policía…) y SIRAM solo la anota en un caso que ya existe. El formulario
+público queda en suspenso.
+
+- **DENUNCIA pasa a ser un dato del caso.** `caso_id` obligatorio (`CASO ||--o{ DENUNCIA`). Se agregan
+  `ente`, `numero`, `fecha` (H0, cierra la brecha §7.3), `denunciante_persona_id`, `anotada_en`.
+  Se eliminan `origen`, `organismo_id`, `recibida_en`, `estado`, `motivo_desestimacion`,
+  `observacion_revision` y `datos_crudos`: describían denuncias que llegaban solas y se revisaban en
+  una cola, y eso ya no existe. Se elimina la relación ORGANISMO–DENUNCIA (quién la anotó sale de
+  USUARIO). No tiene identificador visible propio (`D-…`).
+- **CASO.hizo_denuncia** (`si|no`, nulo = sin dato, RN-23) y **CASO.motivo_no_denuncia** (D3).
+  D1 «denunció en Zoonosis» y D2 «denuncia policial» no son campos: son denuncias anotadas con su ente.
+- **CASO.estado:** se eliminan `sin_confirmar` y `confirmado`; el caso nace `registrado`. Confirmar
+  tenía sentido cuando cualquiera podía cargar un caso desde el formulario público.
+- **RN-28:** las estadísticas cuentan los casos vigentes (sin `desestimado` ni `unificado`).
+- La entrada «DNI obligatorio» anterior decía que una denuncia ciudadana podía llegar sin DNI:
+  queda sin efecto junto con el canal ciudadano.
+- **`TIPO_DENUNCIA` → `TIPO_EVENTO`.** «Denuncia» ya nombra otra cosa (el trámite oficial); el
+  catálogo clasifica el evento. La «T» de la matriz ya significaba «Tipo de evento». Valores
+  propuestos y su deslinde con el tipo de lesión: CONTEXTO §9.

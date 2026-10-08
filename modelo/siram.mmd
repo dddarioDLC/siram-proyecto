@@ -1,13 +1,14 @@
 erDiagram
     %% SIRAM — modelo de datos canónico (fuente de verdad del dominio)
+    %% Versión 1 · 2026-10-08 · SIRAM trata casos; la denuncia es un dato anotado en el caso (ver decisiones.md).
     %% Versión 0 · 2026-10-08 · línea base tomada de recursos/diseno/«De las pantallas al modelo.html»
     %% + atributos de ORGANISMO y USUARIO tomados de recursos/modelo-er/siram-modelo-er.svg.
     %% ES UNA PROPUESTA ABIERTA: brechas conocidas en ../CONTEXTO.md §7. Cambios y su porqué en decisiones.md.
     ORGANISMO ||--o{ USUARIO : agrupa
-    ORGANISMO ||--o{ DENUNCIA : aporta
-    USUARIO ||--o{ DENUNCIA : revisa
+    USUARIO ||--o{ DENUNCIA : anota
     USUARIO ||--o{ CASO : registra
-    DENUNCIA }o--o| CASO : "se incorpora a"
+    CASO ||--o{ DENUNCIA : "tiene anotada"
+    PERSONA |o--o{ DENUNCIA : "la hizo"
     CASO ||--o{ PARTICIPACION : involucra
     PERSONA ||--o{ PARTICIPACION : "participa como"
     CASO ||--|| ANIMAL : describe
@@ -15,7 +16,7 @@ erDiagram
     CASO ||--o{ COINCIDENCIA : "caso A"
     CASO ||--o{ COINCIDENCIA : "caso B"
     CASO ||--o| CASO : "unificado en"
-    TIPO_DENUNCIA ||--o{ CASO : clasifica
+    TIPO_EVENTO ||--o{ CASO : clasifica
     CASO ||--o{ AUDITORIA : registra
     DENUNCIA ||--o{ AUDITORIA : registra
 
@@ -32,18 +33,17 @@ erDiagram
     }
     DENUNCIA {
         id id PK
-        enum origen "organismo|ciudadano|csv"
-        id organismo_id FK "nulo si es ciudadana"
-        id usuario_id FK "nulo si es ciudadana"
-        datetime recibida_en
-        enum estado "recibida|en_revision|vinculada|desestimada"
-        string motivo_desestimacion
-        text observacion_revision
-        json datos_crudos
+        id caso_id FK "obligatorio: nunca existe sola"
+        string ente "Zoonosis, policía… (lista a definir con el cliente)"
+        string numero "nro. de trámite o acta, si se consigue"
+        date fecha "H0, fecha de la denuncia, si se conoce"
+        id denunciante_persona_id FK "quien la hizo, si se conoce"
+        id usuario_id FK "quien la anotó en SIRAM"
+        datetime anotada_en
     }
     CASO {
         id id PK
-        enum estado "sin_confirmar|confirmado|en_seguimiento|finalizado|desestimado|unificado"
+        enum estado "registrado|en_seguimiento|finalizado|desestimado|unificado"
         enum motivo_espera "contacto|respuesta|certificado"
         id unificado_en_caso_id FK
         date fecha_hecho
@@ -56,6 +56,8 @@ erDiagram
         enum zona_cuerpo
         enum gravedad
         bool atencion_medica
+        enum hizo_denuncia "si|no (nulo = sin dato)"
+        string motivo_no_denuncia "D3"
     }
     COINCIDENCIA {
         id id PK
