@@ -1,0 +1,873 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>De Delta a SIRAM</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #F6F7F7;
+    --surface: #FFFFFF;
+    --surface-2: #ECF0EF;
+    --ink: #16211F;
+    --ink-2: #4A5856;
+    --ink-3: #6E7C7A;
+    --line: #D8DEDD;
+    --line-soft: #E7ECEB;
+    --accent: #00776F;
+    --accent-soft: #DDEFEC;
+    --ok: #2E7D32;
+    --warn: #B26A00;
+    --crit: #B3261E;
+    --info: #00668F;
+    --dup: #6B4FA8;
+    --rel: #9A5B2D;
+    --shadow: 0 1px 2px rgba(22,33,31,.06), 0 4px 14px rgba(22,33,31,.05);
+
+    --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --f-body: "Source Sans 3", -apple-system, "Segoe UI", Roboto, sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0F1514;
+      --surface: #171F1E;
+      --surface-2: #1E2827;
+      --ink: #E9EEED;
+      --ink-2: #AAB7B5;
+      --ink-3: #7E8C8A;
+      --line: #2B3837;
+      --line-soft: #222D2C;
+      --accent: #38C6B7;
+      --accent-soft: #0E302C;
+      --ok: #72C076;
+      --warn: #E0A233;
+      --crit: #E8776B;
+      --info: #55B5DF;
+      --dup: #A98EDC;
+      --rel: #D9955C;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0F1514;
+    --surface: #171F1E;
+    --surface-2: #1E2827;
+    --ink: #E9EEED;
+    --ink-2: #AAB7B5;
+    --ink-3: #7E8C8A;
+    --line: #2B3837;
+    --line-soft: #222D2C;
+    --accent: #38C6B7;
+    --accent-soft: #0E302C;
+    --ok: #72C076;
+    --warn: #E0A233;
+    --crit: #E8776B;
+    --info: #55B5DF;
+    --dup: #A98EDC;
+    --rel: #D9955C;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 16.5px;
+    line-height: 1.6;
+    margin: 0;
+  }
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding-inline: 20px;
+    padding-block: 0 72px;
+  }
+
+  /* ---- masthead ---- */
+  .masthead { padding-block: 56px 36px; border-bottom: 2px solid var(--ink); }
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--f-display);
+    font-weight: 800;
+    font-size: clamp(2.1rem, 6vw, 3.4rem);
+    line-height: 1.04;
+    letter-spacing: -.02em;
+    margin: 0 0 18px;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.12rem;
+    color: var(--ink-2);
+    max-width: 60ch;
+    margin: 0;
+  }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px 22px;
+    margin-top: 26px;
+    font-family: var(--f-mono);
+    font-size: 12.5px;
+    color: var(--ink-3);
+  }
+
+  /* ---- layout ---- */
+  .cols { display: grid; grid-template-columns: 1fr; gap: 0; }
+  @media (min-width: 940px) {
+    .cols { grid-template-columns: 196px minmax(0,1fr); gap: 56px; align-items: start; }
+    nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); }
+  }
+  nav.toc { padding-block: 32px 0; }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  @media (min-width: 940px) { nav.toc ol { flex-direction: column; gap: 3px; } }
+  nav.toc a {
+    font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-3);
+    text-decoration: none; display: block; padding: 3px 0; border-bottom: 1px solid transparent;
+  }
+  nav.toc a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  main { padding-block: 32px 0; min-width: 0; }
+  section { margin-bottom: 64px; scroll-margin-top: 24px; }
+  section > p, section > ul, section > ol { max-width: 68ch; }
+  h2 {
+    font-family: var(--f-display); font-weight: 800;
+    font-size: 1.62rem; letter-spacing: -.012em; line-height: 1.15;
+    margin: 0 0 6px; text-wrap: balance;
+  }
+  .sect-num {
+    font-family: var(--f-mono); font-size: 12px; color: var(--accent);
+    letter-spacing: .08em; display: block; margin-bottom: 10px;
+  }
+  h3 {
+    font-family: var(--f-display); font-weight: 600;
+    font-size: 1.1rem; letter-spacing: -.005em;
+    margin: 34px 0 8px;
+  }
+  .lede { color: var(--ink-2); margin: 10px 0 26px; max-width: 66ch; }
+  p { margin: 0 0 15px; }
+  a { color: var(--accent); }
+  strong { font-weight: 600; color: var(--ink); }
+  code, .mono { font-family: var(--f-mono); font-size: .875em; }
+  code {
+    background: var(--surface-2); padding: 1px 5px; border-radius: 3px;
+    color: var(--ink); border: 1px solid var(--line-soft);
+  }
+  ul, ol { padding-left: 1.15em; margin: 0 0 15px; }
+  li { margin-bottom: 7px; }
+
+  /* ---- tables ---- */
+  .tw { overflow-x: auto; margin: 18px 0 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; padding: 9px 13px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  thead th {
+    font-family: var(--f-mono); font-size: 11.5px; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--ink-3); font-weight: 500;
+    background: var(--surface-2); border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.mono, th.mono { font-family: var(--f-mono); font-size: 12.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+  /* ---- swatches ---- */
+  .sw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(138px, 1fr)); gap: 12px; margin: 18px 0; }
+  .sw { border: 1px solid var(--line); border-radius: 5px; overflow: hidden; background: var(--surface); }
+  .sw .chip { height: 52px; border-bottom: 1px solid var(--line); }
+  .sw .lbl { padding: 8px 10px; }
+  .sw .nm { font-size: 13px; font-weight: 600; display: block; line-height: 1.3; }
+  .sw .hx { font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3); }
+
+  /* ---- callouts ---- */
+  .note {
+    border-left: 3px solid var(--accent); background: var(--accent-soft);
+    padding: 14px 18px; margin: 20px 0; border-radius: 0 4px 4px 0;
+  }
+  .note.warn { border-left-color: var(--warn); background: color-mix(in srgb, var(--warn) 11%, var(--surface)); }
+  .note p:last-child { margin-bottom: 0; }
+  .note .tag {
+    font-family: var(--f-mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: .09em; color: var(--ink-2); display: block; margin-bottom: 5px;
+  }
+
+  /* ---- state chips ---- */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 20px; }
+  .chip-st {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 13px; font-weight: 600; padding: 4px 12px 4px 9px;
+    border-radius: 20px; border: 1px solid currentColor; background: var(--surface);
+  }
+  .chip-st::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
+  .c-ok { color: var(--ok); } .c-warn { color: var(--warn); } .c-crit { color: var(--crit); }
+  .c-info { color: var(--info); } .c-dup { color: var(--dup); } .c-mute { color: var(--ink-3); }
+  .c-rel { color: var(--rel); }
+  .est {
+    font-family: var(--f-mono); font-size: 11px; letter-spacing: .07em;
+    text-transform: uppercase; white-space: nowrap; font-weight: 500;
+  }
+
+  /* ---- menu demo ---- */
+  .demo {
+    border: 1px solid var(--line); border-radius: 6px; background: var(--surface);
+    padding: 0; margin: 20px 0; overflow: hidden;
+  }
+  .demo-hd {
+    font-family: var(--f-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-3); padding: 8px 14px; background: var(--surface-2); border-bottom: 1px solid var(--line);
+  }
+  .demo-bd { padding: 16px 0 16px 0; background: var(--surface-2); }
+  .mi {
+    display: flex; align-items: center; gap: 14px;
+    min-height: 40px; padding: 6px 20px; font-size: 14px; color: var(--ink-2);
+    border-radius: 0 30px 30px 0; margin-right: 22px;
+  }
+  .mi .ico { width: 20px; height: 20px; border-radius: 3px; background: var(--ink-3); opacity: .55; flex: none; }
+  .mi.sel { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .mi.sel .ico { background: var(--accent); opacity: 1; }
+  .mi.child { padding-left: 46px; font-size: 13.5px; }
+  .cap { font-size: 13px; color: var(--ink-3); margin: 8px 0 0; font-style: italic; }
+
+  /* ---- two-up ---- */
+  .duo { display: grid; grid-template-columns: 1fr; gap: 16px; margin: 20px 0; }
+  @media (min-width: 720px) { .duo { grid-template-columns: 1fr 1fr; } }
+  .card {
+    border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px; background: var(--surface);
+  }
+  .card h4 {
+    font-family: var(--f-display); font-size: .95rem; font-weight: 600;
+    margin: 0 0 8px; letter-spacing: -.004em;
+  }
+  .card p { font-size: 14.5px; color: var(--ink-2); margin: 0; }
+  .card.keep { border-top: 3px solid var(--ok); }
+  .card.fix { border-top: 3px solid var(--warn); }
+
+  footer {
+    border-top: 1px solid var(--line); padding-block: 26px 0; margin-top: 12px;
+    font-size: 14px; color: var(--ink-3); max-width: 68ch;
+  }
+  ::selection { background: var(--accent); color: var(--surface); }
+  a:focus-visible, nav.toc a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Sistema de diseño · derivación</p>
+    <h1>De Delta a SIRAM</h1>
+    <p class="standfirst">
+      Qué se hereda del lenguaje visual de Delta, qué se corrige antes de heredarlo,
+      y qué hay que inventar porque el registro de ataques y mordeduras pide pantallas
+      que ningún módulo municipal tiene.
+    </p>
+    <div class="meta">
+      <span>Base: <strong>modulos/servicios-publicos</strong></span>
+      <span>Commit <span class="mono">9a4cbb6a</span></span>
+      <span>25·09·2026</span>
+    </div>
+  </header>
+
+  <div class="cols">
+    <nav class="toc" aria-label="Índice">
+      <ol>
+        <li><a href="#premisa">Premisa</a></li>
+        <li><a href="#heredar">1 · Qué se hereda</a></li>
+        <li><a href="#corregir">2 · Qué se corrige</a></li>
+        <li><a href="#tokens">3 · Tokens</a></li>
+        <li><a href="#estados">4 · Color funcional</a></li>
+        <li><a href="#componentes">5 · Componentes</a></li>
+        <li><a href="#inventar">6 · Qué falta inventar</a></li>
+        <li><a href="#navegacion">7 · Navegación</a></li>
+        <li><a href="#abierto">8 · Abierto</a></li>
+      </ol>
+    </nav>
+
+    <main>
+
+      <section id="premisa">
+        <span class="sect-num">00</span>
+        <h2>La premisa</h2>
+        <p class="lede">
+          SIRAM no es un módulo de Delta y no vive en su monorepo: tiene stack propio
+          (React + Vite, Django, PostgreSQL, Docker). Lo que toma prestado es el
+          <strong>lenguaje</strong>, no el código.
+        </p>
+        <p>
+          Delta resuelve bien un problema que SIRAM también tiene: pantallas de gestión
+          para agentes que las usan todos los días, con ABM, tablas densas, formularios
+          largos y permisos por rol. Ese trabajo ya está hecho y pulido. Heredarlo
+          ahorra meses.
+        </p>
+        <p>
+          Pero Delta es municipal y SIRAM es provincial y multi-organismo. La identidad
+          de la Municipalidad de Ushuaia desaparece por completo, y con ella algunas
+          decisiones que solo tenían sentido ahí.
+        </p>
+        <div class="note">
+          <span class="tag">Regla de oro</span>
+          <p>
+            <strong>Ningún organismo domina visualmente.</strong> SIRAM es tierra compartida
+            entre CADIC, Zoonosis, UNTDF y el Ministerio de Salud. Si la cáscara lleva la
+            marca de uno, los otros tres lo leen como sistema ajeno. El organismo aparece
+            como <em>atributo del dato</em> —un chip en la fila, una columna, un filtro—
+            nunca como marca del contenedor.
+          </p>
+        </div>
+
+        <div class="note">
+          <span class="tag">El prototipo</span>
+          <p>
+            Este documento es la teoría. La práctica está en el
+            <a href="https://claude.ai/artifact/7UPisj8YAocXDHkUrNTyMg">prototipo navegable</a>,
+            donde el sistema se ve funcionando: bandeja de casos, ficha, comparación de
+            registros y cola de validación, en tema claro y oscuro.
+          </p>
+        </div>
+
+        <div class="note warn">
+          <span class="tag">Alcance de esta etapa</span>
+          <p>
+            Se diseña únicamente el <strong>panel interno</strong>, el que usan los agentes
+            de los organismos. El <strong>canal público</strong> —el formulario ciudadano por
+            QR, R.17— queda para una etapa posterior y con su propia referencia visual.
+            Las dos superficies se encastran: la pública recibe, la interna analiza y gestiona.
+          </p>
+        </div>
+      </section>
+
+      <section id="heredar">
+        <span class="sect-num">01</span>
+        <h2>Qué se hereda</h2>
+        <p class="lede">
+          Seis decisiones de Delta que resuelven bien su problema y sobreviven intactas
+          al cambio de dominio.
+        </p>
+
+        <h3>La píldora del menú</h3>
+        <p>
+          La firma visual del sistema. El estado activo y el hover se dibujan como una
+          píldora abierta hacia la derecha —<code>border-radius: 0 30px 30px 0</code>—
+          que se sangra desde el borde izquierdo del panel. Es el gesto más reconocible
+          de Delta y no tiene nada de municipal.
+        </p>
+        <div class="demo">
+          <div class="demo-hd">Menú lateral · 240 px expandido</div>
+          <div class="demo-bd">
+            <div class="mi"><span class="ico"></span>Inicio</div>
+            <div class="mi sel"><span class="ico"></span>Casos</div>
+            <div class="mi child">Bandeja</div>
+            <div class="mi child">Pendientes de validación</div>
+            <div class="mi child">Posibles duplicados</div>
+            <div class="mi"><span class="ico"></span>Consultas</div>
+            <div class="mi"><span class="ico"></span>Administración</div>
+          </div>
+        </div>
+        <p class="cap">
+          Dos niveles exactos: padres e hijos directos. Un tercer nivel no se dibuja.
+        </p>
+
+        <h3>La geometría de la cáscara</h3>
+        <ul>
+          <li>Barra superior fija de <strong>89 px</strong>, elevación 1, con identidad a la izquierda y usuario + tema + salir a la derecha.</li>
+          <li>Menú lateral persistente de <strong>240 px, colapsable a 65 px</strong>, con transición de 0.5 s y la versión al pie.</li>
+          <li>El contenido es la <strong>única zona que scrollea</strong>. Barra y menú quedan clavados.</li>
+          <li>Sin breadcrumbs y sin footer. La jerarquía la carga el menú.</li>
+        </ul>
+
+        <h3>Las ventanas son cajones laterales</h3>
+        <p>
+          Crear, editar y confirmar no abren un diálogo centrado: abren un
+          <strong>drawer desde la derecha</strong> al 50 % del ancho en escritorio y al
+          100 % en teléfono, con <code>padding-top: 90px</code> para librar la barra. El
+          pie lleva Cancelar a la izquierda y Guardar a la derecha. Para la ficha de un
+          caso —50 campos— esto es mucho mejor que un modal.
+        </p>
+
+        <h3>Tres formas de carga, según el alcance</h3>
+        <div class="duo">
+          <div class="card keep">
+            <h4>Bloque</h4>
+            <p>Caja de 130 px con spinner, dentro de la zona que carga. Para tablas y secciones.</p>
+          </div>
+          <div class="card keep">
+            <h4>Capa</h4>
+            <p>Velo blanco al 80 % sobre el contenido, que baja a opacidad 0.5 y deja de responder. El contenido nunca desaparece: se atenúa. Para guardar.</p>
+          </div>
+        </div>
+        <p>
+          La tercera es el <em>skeleton</em> con animación de onda, para mensajes y visores.
+          Que el contenido se atenúe en vez de desaparecer es una decisión fina: el usuario
+          no pierde el contexto de lo que estaba haciendo.
+        </p>
+
+        <h3>El error no mueve el layout</h3>
+        <p>
+          Todo campo reserva <strong>20 px de alto</strong> bajo el input para el mensaje de
+          error. Aparezca o no, el formulario no salta. Detalle chico, efecto grande en
+          formularios largos —y los de SIRAM lo son.
+        </p>
+
+        <h3>La ayuda vive en un ícono, no bajo el campo</h3>
+        <p>
+          Nunca hay texto explicativo debajo del input: hay un ícono de información azul
+          junto a la etiqueta, con tooltip. Mantiene el formulario compacto. Para SIRAM
+          es clave, porque varios campos necesitan aclaración
+          (<span class="mono">A2</span> tamaño del animal,
+          <span class="mono">L1</span> tipo de lesión,
+          <span class="mono">H5</span> tipo de lugar).
+        </p>
+      </section>
+
+      <section id="corregir">
+        <span class="sect-num">02</span>
+        <h2>Qué se corrige antes de heredar</h2>
+        <p class="lede">
+          Ocho cosas que en Delta son deuda, no decisión. Copiarlas sería heredar el
+          problema junto con la solución.
+        </p>
+
+        <div class="tw">
+          <table>
+            <thead>
+              <tr><th>En Delta</th><th>En SIRAM</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>El tema oscuro está a medias.</strong> No define tipografía ni los colores de marca, así que al cambiar de tema cambia la familia y la escala completa.</td>
+                <td>Tema oscuro definido entero, con los mismos roles que el claro. Ambos se diseñan a la par.</td>
+              </tr>
+              <tr>
+                <td><strong>El tema no se recuerda.</strong> Vuelve a claro en cada recarga: sin <code>localStorage</code>, sin <code>prefers-color-scheme</code>.</td>
+                <td>Arranca siguiendo al sistema operativo y recuerda la elección.</td>
+              </tr>
+              <tr>
+                <td><strong>~15 colores hex sueltos</strong> repetidos en archivos de componente: el teal de guardar, el magenta de nuevo, el naranja de copiar.</td>
+                <td>Todo color es un token. Ninguno literal en un componente.</td>
+              </tr>
+              <tr>
+                <td><strong>Los overrides de componente están comentados</strong> —AppBar, Card, Tooltip, el asterisco de requerido— escritos pero desactivados.</td>
+                <td>O están activos o no están. Nada de código muerto decidiendo la apariencia.</td>
+              </tr>
+              <tr>
+                <td><strong>Títulos con peso 900 sobre una fuente <em>Book</em>.</strong> El navegador los engorda sintéticamente.</td>
+                <td>Pesos que la familia tiene de verdad.</td>
+              </tr>
+              <tr>
+                <td><strong>Íconos de dos orígenes</strong>: los CRUD de un set, los de dominio de otro.</td>
+                <td>Un solo set para todo el producto.</td>
+              </tr>
+              <tr>
+                <td><strong>El <code>color</code> de cada sección solo lo usa la página de inicio</strong>; el menú lateral lo ignora.</td>
+                <td>Decisión consciente: en SIRAM el color carga significado de estado, y no puede competir con un color decorativo por sección.</td>
+              </tr>
+              <tr>
+                <td><strong>Un vino <span class="mono">#6e024f</span> como color de texto de página</strong>, sin uso aparente.</td>
+                <td>No se hereda.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="tokens">
+        <span class="sect-num">03</span>
+        <h2>Tokens</h2>
+        <p class="lede">
+          Delta es MUI v5 con muy poco encima: espaciado base 8 px, radio 4 px, sombras
+          y breakpoints de fábrica. Eso se mantiene —es sobrio y funciona. Lo que cambia
+          es la paleta y la tipografía.
+        </p>
+
+        <h3>De dónde viene y adónde va</h3>
+        <div class="tw">
+          <table>
+            <thead>
+              <tr><th>Rol</th><th class="mono">Delta</th><th class="mono">SIRAM</th><th>Por qué</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Acción positiva</td><td class="mono">#00B5AD</td><td class="mono">#00776F</td><td>Mismo teal, más profundo: el original no alcanza contraste AA sobre blanco.</td></tr>
+              <tr><td>Crear nuevo</td><td class="mono">#E03997</td><td class="mono">#00776F</td><td>El magenta es arbitrario y compite con el semáforo. Crear usa el mismo teal.</td></tr>
+              <tr><td>Informativo</td><td class="mono">#498FB5</td><td class="mono">#00668F</td><td>Se conserva el azul de ayuda, con más cuerpo.</td></tr>
+              <tr><td>Chrome</td><td class="mono">#eeeeee</td><td class="mono">#ECF0EF</td><td>Neutro con sesgo frío hacia el accent, no gris puro.</td></tr>
+              <tr><td>Texto</td><td class="mono">rgba(0,0,0,.67)</td><td class="mono">#16211F</td><td>Delta aclara el texto al 67 %. Con datos sensibles y tablas densas, hace falta más contraste.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Paleta base</h3>
+        <div class="sw-grid">
+          <div class="sw"><div class="chip" style="background:#00776F"></div><div class="lbl"><span class="nm">Acento</span><span class="hx">#00776F</span></div></div>
+          <div class="sw"><div class="chip" style="background:#16211F"></div><div class="lbl"><span class="nm">Tinta</span><span class="hx">#16211F</span></div></div>
+          <div class="sw"><div class="chip" style="background:#4A5856"></div><div class="lbl"><span class="nm">Tinta 2</span><span class="hx">#4A5856</span></div></div>
+          <div class="sw"><div class="chip" style="background:#ECF0EF"></div><div class="lbl"><span class="nm">Chrome</span><span class="hx">#ECF0EF</span></div></div>
+          <div class="sw"><div class="chip" style="background:#F6F7F7"></div><div class="lbl"><span class="nm">Fondo</span><span class="hx">#F6F7F7</span></div></div>
+          <div class="sw"><div class="chip" style="background:#FFFFFF; border-bottom:1px solid #D8DEDD"></div><div class="lbl"><span class="nm">Superficie</span><span class="hx">#FFFFFF</span></div></div>
+        </div>
+
+        <h3>Tipografía</h3>
+        <p>
+          Gotham no se puede usar fuera de Delta —es una licencia comprada—. El reemplazo
+          tiene que ser una geométrica-humanista de peso similar, con familia real en los
+          pesos altos.
+        </p>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Rol</th><th>Familia</th><th class="mono">Tamaño</th><th class="mono">Peso</th></tr></thead>
+            <tbody>
+              <tr><td>Títulos</td><td>Archivo</td><td class="mono">1.2 – 2.3 rem</td><td class="mono">600 / 800</td></tr>
+              <tr><td>Cuerpo</td><td>Source Sans 3</td><td class="mono">15 px base</td><td class="mono">400</td></tr>
+              <tr><td>Datos y códigos</td><td>IBM Plex Mono</td><td class="mono">12.5 px</td><td class="mono">400</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Delta usa <strong>13 px</strong> de base, un punto menos que el default de MUI.
+          Para SIRAM subo a <strong>15 px</strong>: el sistema lo van a usar agentes de
+          salud y de municipio con perfiles técnicos muy distintos, y la narrativa pide
+          explícitamente una interfaz legible sin conocimientos avanzados.
+        </p>
+        <div class="note">
+          <span class="tag">Números en columna</span>
+          <p>
+            Fechas, DNI, edades y cantidades llevan <code>font-variant-numeric: tabular-nums</code>.
+            En una bandeja de casos donde se comparan fechas para detectar duplicados,
+            que los dígitos se alineen no es cosmético.
+          </p>
+        </div>
+      </section>
+
+      <section id="estados">
+        <span class="sect-num">04</span>
+        <h2>Color funcional: los tres ejes</h2>
+        <p class="lede">
+          Acá está la diferencia real con Delta. En un módulo municipal el color decora
+          secciones; en SIRAM el color <em>es</em> el vocabulario de trabajo. Un caso no
+          tiene un estado: tiene tres cosas a la vez.
+        </p>
+
+        <h3>Eje 1 · Estado del caso</h3>
+        <p>Excluyentes. Es el ciclo de vida, y solo uno puede estar activo.</p>
+        <div class="chips">
+          <span class="chip-st c-mute">Sin confirmar</span>
+          <span class="chip-st c-info">Confirmado</span>
+          <span class="chip-st c-warn">En seguimiento</span>
+          <span class="chip-st c-ok">Finalizado</span>
+          <span class="chip-st c-crit">Desestimado</span>
+          <span class="chip-st c-dup">Unificado en otro caso</span>
+        </div>
+
+        <h3>Eje 2 · Motivo de espera</h3>
+        <p>Solo existe mientras el caso está <em>En seguimiento</em>. Responde por qué está detenido.</p>
+        <div class="chips">
+          <span class="chip-st c-warn">Pendiente de contacto</span>
+          <span class="chip-st c-warn">Pendiente de respuesta</span>
+          <span class="chip-st c-warn">Pendiente de certificado</span>
+        </div>
+
+        <h3>Eje 3 · Marcas</h3>
+        <p>Paralelas. Conviven con cualquier estado y entre sí — este es el semáforo.</p>
+        <div class="chips">
+          <span class="chip-st c-crit">Incompleto</span>
+          <span class="chip-st c-dup">Posible duplicado</span>
+          <span class="chip-st c-rel">Posible evento relacionado</span>
+          <span class="chip-st c-info">Origen ciudadano sin verificar</span>
+        </div>
+
+        <div class="note warn">
+          <span class="tag">Por qué separarlos</span>
+          <p>
+            Si los tres ejes viven en un campo único, un caso en seguimiento que además
+            está incompleto y es sospechoso de duplicado obliga a elegir cuál de las tres
+            cosas mostrar. Se pierden dos. Y la bandeja no puede responder
+            «mostrame todo lo que está esperando algo» sin perder «mostrame todo lo
+            incompleto».
+          </p>
+        </div>
+
+        <p>
+          <strong>Regla de aplicación:</strong> el estado se dibuja como píldora con punto,
+          las marcas como íconos al borde de la fila. Nunca compiten por el mismo lugar.
+          En una tabla, el estado va en su columna; las marcas van pegadas al identificador,
+          a la izquierda, donde el ojo entra.
+        </p>
+
+        <h3>Duplicado y evento relacionado no son lo mismo</h3>
+        <p>
+          Es la distinción más importante de todo el sistema, y la más fácil de perder.
+          El motor de coincidencias produce <strong>dos resultados distintos</strong>,
+          con desenlaces opuestos:
+        </p>
+
+        <div class="tw">
+          <table>
+            <thead>
+              <tr><th>Señal</th><th>Cuándo</th><th>Desenlace</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="chip-st c-dup">Posible duplicado</span></td>
+                <td>Coincide <strong>la persona</strong>. Es el mismo incidente cargado dos veces por dos organismos.</td>
+                <td>Se consolidan en un registro único, conservando la trazabilidad de ambos originales. <strong>Irreversible.</strong></td>
+              </tr>
+              <tr>
+                <td><span class="chip-st c-rel">Evento relacionado</span></td>
+                <td>Coinciden lugar, fecha y animal, pero <strong>las personas son distintas</strong>.</td>
+                <td>Se vinculan como casos hermanos. <strong>Nunca se fusionan.</strong> Reversible.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="note warn">
+          <span class="tag">El error caro</span>
+          <p>
+            Un perro suelto puede morder a dos personas el mismo día en la misma cuadra.
+            Si el sistema los propone como duplicados y alguien acepta, <strong>se borra una
+            víctima del registro</strong> — que es exactamente el subregistro que SIRAM viene
+            a resolver. El dominio ya lo contempla: la matriz tiene el campo
+            <span class="mono">A12</span> «mordedor reincidente», y el formulario de Zoonosis
+            tipifica «canes sueltos, agresivos».
+          </p>
+        </div>
+
+        <p>
+          <strong>Lo que distingue un duplicado de dos víctimas no es el lugar ni la fecha:
+          es la persona.</strong> De ahí que la detección necesite puntaje y no una regla
+          binaria. Las señales no pesan igual:
+        </p>
+
+        <div class="tw">
+          <table>
+            <thead><tr><th>Señal</th><th>Peso</th><th>Nota</th></tr></thead>
+            <tbody>
+              <tr><td>DNI idéntico</td><td>Decisiva</td><td>Solo entre casos de organismo: el formulario ciudadano no lo pide (<span class="mono">HZ01</span>).</td></tr>
+              <tr><td>Teléfono idéntico</td><td>Fuerte</td><td>La única clave fuerte disponible para casos ciudadanos.</td></tr>
+              <tr><td>Nombre parecido + edad cercana</td><td>Fuerte</td><td>Tolerante a abreviaturas: «Micaela Sosa» / «M. Sosa».</td></tr>
+              <tr><td>Misma fecha del hecho ±1 día</td><td>Media</td><td>La fecha se transcribe a mano desde papel y se equivoca. Y lo que coincide es la fecha del <em>hecho</em>, no la de registro.</td></tr>
+              <tr><td>Misma cuadra</td><td>Media</td><td>Depende de que R.22 esté hecho: hoy <span class="mono">H4</span> es texto libre en un formulario y calle+número en el otro.</td></tr>
+              <tr><td>Mismo animal (color, tamaño, raza)</td><td>Refuerzo</td><td>No prueba duplicado. Es lo que dispara la segunda señal.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          <strong>Cuándo se le pregunta al agente.</strong> Dos momentos con umbrales
+          distintos: si la confianza es alta (DNI o teléfono), se interrumpe al guardar,
+          antes de crear el registro. Si es media (lugar y fecha), solo se marca y se
+          revisa cuando hay tiempo. Fusión automática, nunca: R.14 exige que consolide
+          una persona autorizada.
+        </p>
+      </section>
+
+      <section id="componentes">
+        <span class="sect-num">05</span>
+        <h2>Componentes: el contrato</h2>
+        <p class="lede">
+          Delta no expone primitivas: casi todo <code>componentes/base/</code> son
+          envoltorios finos sobre un paquete npm privado. Lo que sí se puede heredar
+          —y es lo valioso— es el contrato de uso.
+        </p>
+
+        <h3>Convenciones de nombre</h3>
+        <ul>
+          <li>El prefijo dice la familia: <code>Boton…</code>, <code>Campo…</code>, <code>Ventana…</code>, <code>Mensaje…</code>, <code>Cargando…</code>.</li>
+          <li>Props en castellano para lo propio (<code>titulo</code>, <code>contenido</code>, <code>acciones</code>, <code>nombre</code>), en inglés cuando pasan directo a la librería (<code>color</code>, <code>variant</code>, <code>size</code>).</li>
+          <li><strong>Slots por prop, no por children.</strong> Título, contenido y acciones se pasan como nodos. Los children se reservan para el cuerpo del formulario.</li>
+        </ul>
+
+        <h3>Botones como presets semánticos</h3>
+        <p>
+          No hay un botón genérico que cada pantalla configura: hay un átomo y
+          <em>presets</em> que fijan color, ícono y texto —Guardar, Nuevo, Eliminar,
+          Cancelar, Buscar, Volver—. La pantalla pide «un botón de guardar», no «un
+          botón teal con ícono de disquete que diga Guardar». Eso mantiene la coherencia
+          sin disciplina.
+        </p>
+        <div class="note">
+          <span class="tag">Detalle a heredar</span>
+          <p>
+            El botón de guardar <strong>queda deshabilitado hasta que el formulario tiene
+            cambios</strong>. En una ficha de 50 campos que se revisa más de lo que se edita,
+            eso evita guardados vacíos y mutaciones inútiles.
+          </p>
+        </div>
+
+        <h3>Mensajes: cuatro severidades, dos comportamientos</h3>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Severidad</th><th>Título por defecto</th><th>Comportamiento</th></tr></thead>
+            <tbody>
+              <tr><td>Éxito</td><td>Éxito</td><td>Se cierra solo</td></tr>
+              <tr><td>Información</td><td>Información</td><td>Se cierra solo</td></tr>
+              <tr><td>Advertencia</td><td>Advertencia</td><td>Exige cierre manual</td></tr>
+              <tr><td>Error</td><td>Error</td><td>Exige cierre manual</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Los flotantes van arriba a la derecha, rellenos. Los inline usan el mismo
+          vocabulario de severidad pero se quedan en la página. La regla es clara:
+          lo que el usuario debe leer sí o sí, no se autocierra.
+        </p>
+
+        <h3>Agrupador de formulario</h3>
+        <p>
+          Los formularios largos se dividen con un <em>fieldset</em> con leyenda: borde
+          del color del divisor, radio del tema, padding 2 y margen inferior 4. Para
+          SIRAM esto cae perfecto: los 50 campos de la matriz ya vienen agrupados en
+          siete bloques —Persona, Hecho, Tipo de evento, Documentación, Animal, Lesión
+          y atención, Denuncia y seguimiento—. Un fieldset por bloque.
+        </p>
+      </section>
+
+      <section id="inventar">
+        <span class="sect-num">06</span>
+        <h2>Qué falta inventar</h2>
+        <p class="lede">
+          Siete piezas que la narrativa pide y que no existen en Delta ni aproximadas.
+          Es acá donde el proyecto tiene trabajo de diseño real, no de adaptación.
+        </p>
+
+        <div class="tw">
+          <table>
+            <thead><tr><th class="mono">Req.</th><th>Pieza</th><th>Por qué no alcanza lo que hay</th><th>Estado</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="mono">R.13<br>R.14</td>
+                <td><strong>Comparar y fusionar duplicados</strong></td>
+                <td>La pantalla más exigente de todo SIRAM: dos registros lado a lado, campo por campo, eligiendo cuál sobrevive sin perder la trazabilidad de los originales.</td>
+                <td><span class="est c-ok">Diseñada</span></td>
+              </tr>
+              <tr>
+                <td class="mono">R.10</td>
+                <td><strong>Bandeja de validación</strong></td>
+                <td>Cola de denuncias ciudadanas con revisar, completar, aprobar o rechazar. Es un flujo de trabajo, no una tabla con acciones.</td>
+                <td><span class="est c-ok">Diseñada</span></td>
+              </tr>
+              <tr>
+                <td class="mono">R.29</td>
+                <td><strong>Línea de tiempo de auditoría</strong></td>
+                <td>Quién tocó qué y cuándo, por caso. Delta tiene un patrón de timeline para trámites, pero atado a su motor de procesos.</td>
+                <td><span class="est c-ok">Diseñada</span></td>
+              </tr>
+              <tr>
+                <td class="mono">R.30</td>
+                <td><strong>Panel con gráficos</strong></td>
+                <td>Indicadores epidemiológicos, distribución temporal y geográfica. No hay un solo gráfico en Delta.</td>
+                <td><span class="est c-warn">En curso</span></td>
+              </tr>
+              <tr>
+                <td class="mono">R.22</td>
+                <td><strong>Mapa interactivo</strong></td>
+                <td>Geocodificación, pin drop manual, filtro por calle y barrio. Delta no tiene nada cartográfico. Es la pieza más pesada.</td>
+                <td><span class="est c-mute">Pendiente</span></td>
+              </tr>
+              <tr>
+                <td class="mono">R.25</td>
+                <td><strong>Importación de CSV</strong></td>
+                <td>Carga masiva con devolución de qué filas no entraron y por qué. Necesita una vista de resultado de importación.</td>
+                <td><span class="est c-mute">Pendiente</span></td>
+              </tr>
+              <tr>
+                <td class="mono">R.17</td>
+                <td><strong>Canal público</strong></td>
+                <td>Superficie sin sesión, por QR. Delta entero vive detrás de autenticación. Va aparte, con su propia piel y su propio tono.</td>
+                <td><span class="est c-mute">Fuera de esta etapa</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="note warn">
+          <span class="tag">La tensión de fondo</span>
+          <p>
+            SIRAM tiene dos audiencias opuestas. El <strong>agente interno</strong> es el
+            mismo perfil que Delta atiende hoy: densidad, eficiencia, atajos. El
+            <strong>usuario externo</strong> es alguien sin cuenta que probablemente
+            <em>acaba de ser mordido, o vio morder a un hijo</em>. No necesita una
+            herramienta de gestión: necesita contención, pocos pasos y cero jerga.
+            El lenguaje de Delta sirve para la primera. Para la segunda hay que
+            construir otra cosa — y por eso el canal público se diseña aparte, en una
+            etapa posterior, con su propia referencia.
+          </p>
+        </div>
+      </section>
+
+      <section id="navegacion">
+        <span class="sect-num">07</span>
+        <h2>Navegación</h2>
+        <p class="lede">
+          Cuatro bloques, igual que un módulo Delta. Pero la configuración baja al último
+          lugar y los casos ocupan el centro.
+        </p>
+
+        <div class="tw">
+          <table>
+            <thead><tr><th>Bloque</th><th>Contiene</th><th class="mono">Req.</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Inicio</strong></td><td>Panel epidemiológico sobre el índice de secciones</td><td class="mono">R.30</td></tr>
+              <tr><td><strong>Casos</strong></td><td>Bandeja · Nuevo caso · Pendientes de validación · Posibles duplicados · Incompletos</td><td class="mono">R.08 · R.10 · R.11 · R.13</td></tr>
+              <tr><td><strong>Consultas</strong></td><td>Búsqueda avanzada · Mapa · Estadísticas · Exportar</td><td class="mono">R.20 – R.23 · R.27</td></tr>
+              <tr><td><strong>Administración</strong></td><td>Usuarios · Organismos · Tipos de denuncia · Importar CSV</td><td class="mono">R.01 · R.08 · R.25</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          En <code>servicios-publicos</code> la configuración va primera y los ABM son el
+          plato fuerte. En SIRAM los catálogos son andamiaje: lo que el agente hace todo
+          el día es trabajar casos. Copiar el orden actual enterraría el corazón del
+          sistema en un submenú.
+        </p>
+        <p>
+          <strong>Restricción a respetar:</strong> dos niveles de menú y nada más. La
+          estructura de arriba entra justo; cualquier cosa que quiera un tercer nivel
+          hay que resolverla dentro de la página, con pestañas o filtros.
+        </p>
+      </section>
+
+      <section id="abierto">
+        <span class="sect-num">08</span>
+        <h2>Lo que queda abierto</h2>
+        <p class="lede">
+          Nada de esto bloquea el diseño de la bandeja, pero sí condiciona pantallas
+          posteriores. Se anota para no resolverlo por omisión.
+        </p>
+
+        <h3>Del modelo de datos</h3>
+        <ul>
+          <li><strong>No existe la relación Denuncia → Caso.</strong> Es la relación central del sistema: el caso consolida una o más denuncias del mismo incidente. En el boceto ER las dos entidades están desconectadas.</li>
+          <li><strong>El estado cuelga de la denuncia, no del caso.</strong> Pero los estados del ciclo de vida son del caso. Probablemente hagan falta dos máquinas de estado distintas: una corta para la denuncia, una larga para el caso.</li>
+          <li><strong>Falta el denunciante como rol separado de la víctima.</strong> El formulario de Zoonosis los distingue (<span class="mono">P9</span>) y el hallazgo <span class="mono">HZ07</span> pide definirlo. Hoy el modelo no representa «mi hijo fue mordido y yo hago la denuncia».</li>
+        </ul>
+
+        <h3>Del dominio</h3>
+        <ul>
+          <li><span class="mono">HZ08</span> — En SIRAM no se dan de baja denuncias, pero el trámite de Zoonosis desglosa y devuelve las que no presentan certificado en 48 h hábiles. ¿Cómo se ve una denuncia devuelta que no se puede dar de baja?</li>
+          <li><span class="mono">HZ01</span> — El formulario público no pide DNI y el de Zoonosis sí. Como el DNI es la clave principal de deduplicación, los casos ciudadanos solo se cruzan por correo, teléfono y fecha: más duplicados sin resolver llegando a la bandeja.</li>
+          <li><span class="mono">HZ09</span> — Escalas distintas entre formularios («Chico» contra «Pequeño», «No sé» presente en unos campos y ausente en otros). La estructura común necesita un valor <em>desconocido</em> explícito, y eso se diseña, no se improvisa.</li>
+        </ul>
+
+        <h3>Del sistema de origen</h3>
+        <ul>
+          <li>Los tamaños reales de título y subtítulo no se pudieron leer: vienen de un paquete privado que no está instalado en este checkout.</li>
+          <li>El breakpoint exacto de teléfono depende de otro paquete tampoco instalado. Se asume el estándar de 900 px, pero es inferencia.</li>
+          <li>Las tablas no tienen adaptación propia a pantalla chica: heredan el scroll horizontal de la librería. Para una bandeja de casos con muchas columnas, conviene decidirlo a conciencia.</li>
+        </ul>
+      </section>
+
+      <footer>
+        Extraído de <span class="mono">componentes/theme</span>,
+        <span class="mono">componentes/base</span> y
+        <span class="mono">componentes/modulo</span> del monorepo Delta en el commit
+        <span class="mono">9a4cbb6a</span>, con <span class="mono">modulos/servicios-publicos</span>
+        como caso de uso. Fuentes de dominio: documento SIRAM del 11·09·2026 y la matriz
+        de comparación de formularios del 22·09·2026.
+      </footer>
+
+    </main>
+  </div>
+</div>
+
+</body></html>

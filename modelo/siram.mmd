@@ -1,0 +1,104 @@
+erDiagram
+    %% SIRAM — modelo de datos canónico (fuente de verdad del dominio)
+    %% Versión 0 · 2026-10-08 · línea base tomada de recursos/diseno/«De las pantallas al modelo.html»
+    %% + atributos de ORGANISMO y USUARIO tomados de recursos/modelo-er/siram-modelo-er.svg.
+    %% ES UNA PROPUESTA ABIERTA: brechas conocidas en ../CONTEXTO.md §7. Cambios y su porqué en decisiones.md.
+    ORGANISMO ||--o{ USUARIO : agrupa
+    ORGANISMO ||--o{ DENUNCIA : aporta
+    USUARIO ||--o{ DENUNCIA : revisa
+    USUARIO ||--o{ CASO : registra
+    DENUNCIA }o--o| CASO : "se incorpora a"
+    CASO ||--o{ PARTICIPACION : involucra
+    PERSONA ||--o{ PARTICIPACION : "participa como"
+    CASO ||--|| ANIMAL : describe
+    CASO ||--o{ DOCUMENTO : adjunta
+    CASO ||--o{ COINCIDENCIA : "caso A"
+    CASO ||--o{ COINCIDENCIA : "caso B"
+    CASO ||--o| CASO : "unificado en"
+    TIPO_DENUNCIA ||--o{ CASO : clasifica
+    CASO ||--o{ AUDITORIA : registra
+    DENUNCIA ||--o{ AUDITORIA : registra
+
+    ORGANISMO {
+        id id PK
+        string nombre
+        enum tipo
+    }
+    USUARIO {
+        id id PK
+        id organismo_id FK
+        string nombre
+        enum rol
+    }
+    DENUNCIA {
+        id id PK
+        enum origen "organismo|ciudadano|csv"
+        id organismo_id FK "nulo si es ciudadana"
+        id usuario_id FK "nulo si es ciudadana"
+        datetime recibida_en
+        enum estado "recibida|en_revision|vinculada|desestimada"
+        string motivo_desestimacion
+        text observacion_revision
+        json datos_crudos
+    }
+    CASO {
+        id id PK
+        enum estado "sin_confirmar|confirmado|en_seguimiento|finalizado|desestimado|unificado"
+        enum motivo_espera "contacto|respuesta|certificado"
+        id unificado_en_caso_id FK
+        date fecha_hecho
+        time hora_hecho
+        string ciudad
+        string lugar
+        point coordenadas
+        enum tipo_lugar
+        enum tipo_lesion
+        enum zona_cuerpo
+        enum gravedad
+        bool atencion_medica
+    }
+    COINCIDENCIA {
+        id id PK
+        id caso_a_id FK
+        id caso_b_id FK
+        enum tipo "duplicado|evento_relacionado"
+        int puntaje
+        json senales
+        enum revision "pendiente|resuelta|descartada"
+        id resuelta_por FK
+    }
+    PERSONA {
+        id id PK
+        string nombre
+        string dni "obligatorio salvo registros históricos (RN-21)"
+        int edad
+        string telefono
+        string correo
+        string domicilio
+    }
+    PARTICIPACION {
+        id caso_id FK
+        id persona_id FK
+        enum rol "victima|denunciante"
+        string vinculo "madre, padre, vecino"
+    }
+    ANIMAL {
+        id id PK
+        enum especie
+        enum tamano
+        string color
+        string raza
+        enum sexo
+        enum origen_tenencia
+        bool reincidente
+        string zona_domicilio
+    }
+    AUDITORIA {
+        id id PK
+        enum entidad "caso|denuncia"
+        id entidad_id
+        enum actor "usuario|sistema"
+        id usuario_id FK
+        string accion
+        datetime fecha
+    }

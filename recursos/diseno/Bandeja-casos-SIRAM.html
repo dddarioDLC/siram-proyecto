@@ -1,0 +1,888 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Bandeja de casos SIRAM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ground:#F6F7F7;
+    --surface:#FFFFFF;
+    --surface-2:#ECF0EF;
+    --ink:#16211F;
+    --ink-2:#4A5856;
+    --ink-3:#6E7C7A;
+    --line:#D8DEDD;
+    --accent:#00776F;
+    --accent-soft:#DDEFEC;
+    --ok:#2E7D32;
+    --warn:#B26A00;
+    --crit:#B3261E;
+    --info:#00668F;
+    --dup:#6B4FA8;
+    --ok-soft:#E3F1E4;
+    --warn-soft:#F7ECD9;
+    --crit-soft:#F8E4E2;
+    --info-soft:#DEEDF5;
+    --dup-soft:#EAE4F5;
+    --rel:#9A5B2D;
+    --rel-soft:#F5E9DC;
+    --neutral-soft:#E7EBEA;
+    --row-hover:#F1F4F3;
+    --chrome-hover:#E1E7E6;
+    --shadow:rgba(22,33,31,.14);
+    --focus:#00776F;
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#0F1514;
+      --surface:#171F1E;
+      --surface-2:#1E2827;
+      --ink:#E9EEED;
+      --ink-2:#AAB7B5;
+      --ink-3:#7E8C8A;
+      --line:#2B3837;
+      --accent:#38C6B7;
+      --accent-soft:#0E302C;
+      --ok:#72C076;
+      --warn:#E0A233;
+      --crit:#E8776B;
+      --info:#55B5DF;
+      --dup:#A98EDC;
+      --ok-soft:#162A18;
+      --warn-soft:#2E2413;
+      --crit-soft:#2E1B18;
+      --info-soft:#0F2733;
+      --dup-soft:#221B33;
+      --rel:#D9955C;
+      --rel-soft:#2E2317;
+      --neutral-soft:#26302F;
+      --row-hover:#1C2423;
+      --chrome-hover:#263130;
+      --shadow:rgba(0,0,0,.5);
+      --focus:#38C6B7;
+    }
+  }
+
+  :root[data-theme="dark"]{
+    --ground:#0F1514;
+    --surface:#171F1E;
+    --surface-2:#1E2827;
+    --ink:#E9EEED;
+    --ink-2:#AAB7B5;
+    --ink-3:#7E8C8A;
+    --line:#2B3837;
+    --accent:#38C6B7;
+    --accent-soft:#0E302C;
+    --ok:#72C076;
+    --warn:#E0A233;
+    --crit:#E8776B;
+    --info:#55B5DF;
+    --dup:#A98EDC;
+    --ok-soft:#162A18;
+    --warn-soft:#2E2413;
+    --crit-soft:#2E1B18;
+    --info-soft:#0F2733;
+    --dup-soft:#221B33;
+    --rel:#D9955C;
+    --rel-soft:#2E2317;
+    --neutral-soft:#26302F;
+    --row-hover:#1C2423;
+    --chrome-hover:#263130;
+    --shadow:rgba(0,0,0,.5);
+    --focus:#38C6B7;
+  }
+
+  *,*::before,*::after{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:var(--ground);
+    color:var(--ink);
+    font-family:"Source Sans 3",system-ui,sans-serif;
+    font-size:15px;
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
+  input{font:inherit;}
+
+  :focus-visible{
+    outline:2px solid var(--focus);
+    outline-offset:2px;
+    border-radius:4px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;animation:none !important;}
+  }
+
+  /* ---------- barra superior ---------- */
+  .topbar{
+    position:fixed;
+    inset:0 0 auto 0;
+    height:89px;
+    background:var(--surface-2);
+    box-shadow:0 1px 2px var(--shadow);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:0 20px 0 12px;
+    z-index:30;
+  }
+
+  .iconbtn{
+    width:40px;height:40px;
+    display:inline-flex;align-items:center;justify-content:center;
+    border-radius:4px;
+    color:var(--ink-2);
+    transition:background .12s ease,color .12s ease;
+  }
+  .iconbtn:hover{background:var(--chrome-hover);color:var(--ink);}
+
+  .identity{margin-left:6px;display:flex;flex-direction:column;justify-content:center;}
+  .identity .wordmark{
+    font-family:"Archivo",sans-serif;
+    font-weight:800;
+    font-size:23px;
+    letter-spacing:.14em;
+    line-height:1;
+    color:var(--ink);
+  }
+  .identity .tagline{
+    margin-top:5px;
+    font-size:12px;
+    color:var(--ink-3);
+    letter-spacing:.01em;
+  }
+
+  .topbar-right{margin-left:auto;display:flex;align-items:center;gap:6px;}
+  .username{font-size:14px;color:var(--ink-2);white-space:nowrap;}
+  .vdiv{width:1px;height:28px;background:var(--line);margin:0 8px;}
+  .avatar{
+    width:36px;height:36px;border-radius:50%;
+    background:var(--accent-soft);
+    color:var(--accent);
+    font-family:"Archivo",sans-serif;font-weight:600;font-size:14px;
+    display:inline-flex;align-items:center;justify-content:center;
+    border:1px solid transparent;
+  }
+  .avatar:hover{border-color:var(--accent);}
+
+  /* ---------- menú lateral ---------- */
+  .sidebar{
+    position:fixed;
+    top:89px;left:0;bottom:0;
+    width:240px;
+    background:var(--surface-2);
+    border-right:1px solid var(--line);
+    display:flex;flex-direction:column;
+    padding:16px 0 0;
+    z-index:20;
+    overflow-y:auto;
+  }
+
+  .nav{list-style:none;margin:0;padding:0;}
+
+  /* LA FIRMA: píldora abierta a la derecha, sangrada desde el borde izquierdo */
+  .nav-item{
+    display:flex;align-items:center;
+    width:calc(100% - 22px);
+    min-height:44px;
+    padding:8px 20px;
+    border-radius:0 30px 30px 0;
+    color:var(--ink-2);
+    text-align:left;
+    transition:background .12s ease,color .12s ease;
+  }
+  .nav-item:hover{background:var(--chrome-hover);color:var(--ink);}
+  .nav-item .ic{
+    width:20px;height:20px;margin-right:14px;flex:none;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  .nav-item .lbl{flex:1;font-size:15px;}
+  .nav-item[aria-current="page"]{
+    background:var(--accent-soft);
+    color:var(--accent);
+    font-weight:600;
+  }
+  .nav-item.is-open{color:var(--ink);font-weight:600;}
+  .chev{width:14px;height:14px;color:var(--ink-3);flex:none;}
+
+  .subnav{list-style:none;margin:2px 0 6px;padding:0;}
+  .nav-item.sub{padding-left:40px;min-height:40px;}
+  .nav-item.sub .dot{
+    width:5px;height:5px;border-radius:50%;
+    background:var(--ink-3);margin-right:9px;flex:none;
+  }
+  .nav-item.sub[aria-current="page"] .dot{background:var(--accent);}
+  .nav-item.sub .lbl{font-size:14px;}
+  .nav-count{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12px;font-weight:400;
+    color:var(--ink-3);
+    font-variant-numeric:tabular-nums;
+  }
+
+  .sidebar-foot{
+    margin-top:auto;
+    padding:16px 22px 14px 0;
+    text-align:right;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11px;
+    color:var(--ink-3);
+    letter-spacing:.04em;
+  }
+
+  /* ---------- contenido (única zona con scroll) ---------- */
+  .main{
+    position:fixed;
+    top:89px;left:240px;right:0;bottom:0;
+    overflow-y:auto;
+    background:var(--ground);
+  }
+  .page{padding:28px 32px 40px;}
+
+  .page-head{
+    display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;
+    margin-bottom:24px;
+  }
+  h1{
+    font-family:"Archivo",sans-serif;font-weight:800;
+    font-size:26px;line-height:1.15;margin:0 0 4px;
+    letter-spacing:-.01em;
+  }
+  .page-sub{margin:0;color:var(--ink-3);font-size:14px;}
+  .demo-note{
+    margin-left:auto;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--ink-3);
+    border:1px dashed var(--line);
+    border-radius:4px;
+    padding:5px 9px;
+    white-space:nowrap;
+  }
+
+  /* ---------- panel ---------- */
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:4px;
+  }
+
+  .toolbar{
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    padding:16px;
+    border-bottom:1px solid var(--line);
+  }
+
+  .search{
+    position:relative;
+    flex:0 1 320px;min-width:190px;
+  }
+  .search svg{
+    position:absolute;left:10px;top:50%;transform:translateY(-50%);
+    color:var(--ink-3);pointer-events:none;
+  }
+  .search input{
+    width:100%;
+    height:38px;
+    padding:0 12px 0 34px;
+    background:var(--ground);
+    border:1px solid var(--line);
+    border-radius:4px;
+    color:var(--ink);
+  }
+  .search input::placeholder{color:var(--ink-3);}
+  .search input:focus{outline:2px solid var(--focus);outline-offset:-1px;border-color:var(--focus);}
+
+  .btn-primary{
+    height:38px;
+    display:inline-flex;align-items:center;gap:8px;
+    padding:0 16px;
+    background:var(--accent);
+    color:#FFFFFF;
+    border-radius:4px;
+    font-weight:600;font-size:14px;
+    transition:filter .12s ease;
+  }
+  :root[data-theme="dark"] .btn-primary{color:#07201D;}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .btn-primary{color:#07201D;}
+  }
+  .btn-primary:hover{filter:brightness(1.08);}
+
+  .tool-right{margin-left:auto;display:flex;gap:2px;}
+
+  .chips{
+    display:flex;gap:8px;flex-wrap:wrap;
+    padding:0 16px 16px;
+    border-bottom:1px solid var(--line);
+  }
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    height:30px;padding:0 12px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    background:var(--surface);
+    color:var(--ink-2);
+    font-size:13.5px;
+    transition:background .12s ease,border-color .12s ease;
+  }
+  .chip:hover{background:var(--ground);}
+  .chip .n{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink-3);font-variant-numeric:tabular-nums;}
+  .chip[aria-pressed="true"]{
+    background:var(--accent-soft);
+    border-color:var(--accent);
+    color:var(--accent);
+    font-weight:600;
+  }
+  .chip[aria-pressed="true"] .n{color:var(--accent);}
+
+  /* ---------- tabla ---------- */
+  .tablewrap{overflow-x:auto;}
+  table{border-collapse:collapse;width:100%;min-width:1180px;}
+
+  thead th{
+    position:sticky;top:0;
+    background:var(--surface);
+    text-align:left;
+    font-size:11px;font-weight:600;
+    letter-spacing:.07em;text-transform:uppercase;
+    color:var(--ink-3);
+    padding:12px 14px;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+    z-index:2;
+  }
+  tbody td{
+    padding:12px 14px;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+    white-space:nowrap;
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr{transition:background .1s ease;}
+  tbody tr:hover td{background:var(--row-hover);}
+
+  .mono{
+    font-family:"IBM Plex Mono",monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:13.5px;
+    letter-spacing:-.01em;
+  }
+  .t-primary{color:var(--ink);font-weight:600;}
+  .t-sub{display:block;margin-top:2px;font-size:12.5px;color:var(--ink-3);font-weight:400;}
+  .t-sub.mono{font-size:12px;}
+
+  /* marcas */
+  .marks{display:flex;gap:5px;align-items:center;min-height:20px;}
+  .mark{
+    width:17px;height:17px;flex:none;
+    display:inline-flex;align-items:center;justify-content:center;
+    border:1px solid currentColor;
+    border-radius:3px;
+    font-family:"Archivo",sans-serif;
+    font-weight:800;font-size:11px;line-height:1;
+    position:relative;
+  }
+  .mark.incompleto{color:var(--crit);background:var(--crit-soft);}
+  .mark.ciudadano{color:var(--info);background:var(--info-soft);}
+  .mark.duplicado{
+    color:var(--dup);background:var(--dup-soft);
+    width:14px;height:14px;margin:3px 3px 0 0;
+  }
+  .mark.duplicado::after{
+    content:"";position:absolute;
+    right:-4px;top:-4px;
+    width:13px;height:13px;
+    border:1px solid currentColor;
+    border-radius:3px;
+    background:var(--surface);
+  }
+  tbody tr:hover .mark.duplicado::after{background:var(--row-hover);}
+  .mark.relacionado{
+    color:var(--rel);background:var(--rel-soft);
+    font-size:13px;padding-bottom:2px;
+  }
+
+  /* estado */
+  .estado{
+    display:inline-flex;align-items:center;gap:7px;
+    height:24px;padding:0 10px 0 8px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:var(--neutral-soft);
+    font-size:12.5px;font-weight:600;
+    color:var(--ink-2);
+  }
+  .estado .pt{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none;}
+  .estado.e-confirmado{color:var(--info);background:var(--info-soft);border-color:var(--info-soft);}
+  .estado.e-seguimiento{color:var(--warn);background:var(--warn-soft);border-color:var(--warn-soft);}
+  .estado.e-finalizado{color:var(--ok);background:var(--ok-soft);border-color:var(--ok-soft);}
+  .estado.e-desestimado{color:var(--crit);background:var(--crit-soft);border-color:var(--crit-soft);}
+  .estado.e-unificado{color:var(--dup);background:var(--dup-soft);border-color:var(--dup-soft);}
+  .espera{
+    display:block;margin-top:5px;
+    font-size:12px;color:var(--warn);
+  }
+  .unificado-ref{display:block;margin-top:5px;font-size:12px;color:var(--ink-3);}
+
+  .origen{
+    display:inline-block;
+    padding:3px 9px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    font-size:12.5px;
+    color:var(--ink-2);
+    background:var(--ground);
+  }
+  tbody tr:hover .origen{background:var(--surface);}
+
+  th.col-acc,td.col-acc{
+    position:sticky;right:0;
+    background:var(--surface);
+    border-left:1px solid var(--line);
+    width:52px;padding-left:8px;padding-right:8px;
+    text-align:center;
+  }
+  tbody tr:hover td.col-acc{background:var(--row-hover);}
+  .kebab{
+    width:30px;height:30px;border-radius:4px;color:var(--ink-3);
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  .kebab:hover{background:var(--neutral-soft);color:var(--ink);}
+
+  /* ---------- pie de tabla ---------- */
+  .tablefoot{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    padding:12px 16px;
+    border-top:1px solid var(--line);
+    font-size:13.5px;color:var(--ink-3);
+  }
+  .rows-per-page{display:flex;align-items:center;gap:8px;}
+  .select{
+    height:30px;padding:0 10px;
+    border:1px solid var(--line);border-radius:4px;
+    background:var(--surface);color:var(--ink);
+    font-family:"IBM Plex Mono",monospace;font-size:13px;
+    display:inline-flex;align-items:center;gap:8px;
+  }
+  .range{
+    margin-left:auto;
+    font-family:"IBM Plex Mono",monospace;font-size:13px;
+    color:var(--ink-2);font-variant-numeric:tabular-nums;
+  }
+  .pager{display:flex;gap:2px;}
+  .pgbtn{
+    width:30px;height:30px;border-radius:4px;
+    display:inline-flex;align-items:center;justify-content:center;
+    color:var(--ink-2);
+  }
+  .pgbtn:hover{background:var(--neutral-soft);color:var(--ink);}
+  .pgbtn[disabled]{color:var(--line);cursor:default;}
+  .pgbtn[disabled]:hover{background:none;color:var(--line);}
+  .pgnum{
+    min-width:30px;height:30px;padding:0 8px;border-radius:4px;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--ink-2);
+  }
+  .pgnum:hover{background:var(--neutral-soft);color:var(--ink);}
+  .pgnum[aria-current="page"]{background:var(--accent-soft);color:var(--accent);font-weight:500;}
+
+  .legend{
+    display:flex;gap:18px;flex-wrap:wrap;
+    margin-top:16px;
+    font-size:12.5px;color:var(--ink-3);
+  }
+  .legend span{display:inline-flex;align-items:center;gap:7px;}
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 900px){
+    .sidebar{display:none;}
+    .main{left:0;}
+    .username{display:none;}
+    .page{padding:24px 20px 32px;}
+  }
+  @media (max-width: 560px){
+    .topbar{height:89px;padding:0 12px;}
+    .identity .wordmark{font-size:20px;}
+    .page{padding:20px 16px 28px;}
+    h1{font-size:22px;}
+    .demo-note{margin-left:0;}
+    .tool-right{margin-left:0;}
+    .search{flex:1 1 100%;}
+  }
+</style>
+
+<header class="topbar">
+  <button class="iconbtn" aria-label="Abrir menú">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+
+  <div class="identity">
+    <span class="wordmark">SIRAM</span>
+    <span class="tagline">Registro de Ataques y Mordeduras</span>
+  </div>
+
+  <div class="topbar-right">
+    <button class="iconbtn" id="theme-toggle" aria-label="Cambiar a tema oscuro" title="Cambiar tema">
+      <svg id="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>
+      <svg id="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2z"/></svg>
+    </button>
+    <span class="username">Daniela Marchisoney</span>
+    <span class="vdiv" aria-hidden="true"></span>
+    <button class="avatar" aria-label="Cuenta de Daniela Marchisoney">DM</button>
+  </div>
+</header>
+
+<nav class="sidebar" aria-label="Navegación principal">
+  <ul class="nav">
+    <li>
+      <button class="nav-item">
+        <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg></span>
+        <span class="lbl">Inicio</span>
+      </button>
+    </li>
+
+    <li>
+      <button class="nav-item is-open" aria-expanded="true">
+        <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h6l1.6 2H20v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/></svg></span>
+        <span class="lbl">Casos</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <ul class="subnav">
+        <li><button class="nav-item sub" aria-current="page"><span class="dot"></span><span class="lbl">Bandeja</span></button></li>
+        <li><button class="nav-item sub"><span class="dot"></span><span class="lbl">Nuevo caso</span></button></li>
+        <li><button class="nav-item sub"><span class="dot"></span><span class="lbl">Pendientes de validación</span><span class="nav-count">14</span></button></li>
+        <li><button class="nav-item sub"><span class="dot"></span><span class="lbl">Posibles duplicados</span><span class="nav-count">8</span></button></li>
+        <li><button class="nav-item sub"><span class="dot"></span><span class="lbl">Eventos relacionados</span><span class="nav-count">5</span></button></li>
+        <li><button class="nav-item sub"><span class="dot"></span><span class="lbl">Incompletos</span><span class="nav-count">23</span></button></li>
+      </ul>
+    </li>
+
+    <li>
+      <button class="nav-item">
+        <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg></span>
+        <span class="lbl">Consultas</span>
+      </button>
+    </li>
+
+    <li>
+      <button class="nav-item">
+        <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 14.5a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.11a1.7 1.7 0 0 0-2.9-1.2l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 3 14.5a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.28-2.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 10 3.11V3a2 2 0 1 1 4 0v.11a1.7 1.7 0 0 0 2.9 1.2l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 21 10.5a2 2 0 1 1 0 4z"/></svg></span>
+        <span class="lbl">Administración</span>
+      </button>
+    </li>
+  </ul>
+
+  <div class="sidebar-foot">V0.1.0</div>
+</nav>
+
+<main class="main">
+  <div class="page">
+
+    <div class="page-head">
+      <div>
+        <h1>Bandeja de casos</h1>
+        <p class="page-sub">Casos registrados en el sistema, ordenados por fecha de novedad.</p>
+      </div>
+      <span class="demo-note">Datos de ejemplo</span>
+    </div>
+
+    <section class="panel">
+
+      <div class="toolbar">
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+          <input type="search" placeholder="¿Qué busca?" aria-label="Buscar casos">
+        </div>
+
+        <button class="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo caso
+        </button>
+
+        <div class="tool-right">
+          <button class="iconbtn" aria-label="Filtros" title="Filtros">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5h17l-6.6 7.7V19l-3.8 2v-8.3z"/></svg>
+          </button>
+          <button class="iconbtn" aria-label="Densidad de fila" title="Densidad">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/><path d="M4 9h16M4 15h16" opacity=".45"/></svg>
+          </button>
+          <button class="iconbtn" aria-label="Columnas visibles" title="Columnas">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="1"/><path d="M9.2 4.5v15M14.8 4.5v15"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="chips" role="group" aria-label="Filtros rápidos">
+        <button class="chip" aria-pressed="true">Todos <span class="n">(127)</span></button>
+        <button class="chip" aria-pressed="false">Incompletos <span class="n">(23)</span></button>
+        <button class="chip" aria-pressed="false">Posibles duplicados <span class="n">(8)</span></button>
+        <button class="chip" aria-pressed="false">Eventos relacionados <span class="n">(5)</span></button>
+        <button class="chip" aria-pressed="false">Sin confirmar <span class="n">(14)</span></button>
+        <button class="chip" aria-pressed="false">En seguimiento <span class="n">(41)</span></button>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Marcas</th>
+              <th scope="col">Caso</th>
+              <th scope="col">Fecha del hecho</th>
+              <th scope="col">Víctima</th>
+              <th scope="col">Lugar</th>
+              <th scope="col">Animal</th>
+              <th scope="col">Lesión</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Origen</th>
+              <th scope="col" class="col-acc" aria-label="Acciones"></th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr>
+              <td>
+                <span class="marks">
+                  <span class="mark incompleto" title="Incompleto: faltan datos obligatorios">!</span>
+                  <span class="mark duplicado" title="Posible duplicado de otro caso"></span>
+                </span>
+              </td>
+              <td class="mono t-primary">C-2026-0418</td>
+              <td class="mono">12/09/2026<span class="t-sub mono">14:20</span></td>
+              <td class="t-primary">Micaela Sosa<span class="t-sub">7 años</span></td>
+              <td>Kuanip 1240<span class="t-sub">Ushuaia</span></td>
+              <td>Perro<span class="t-sub">Mediano</span></td>
+              <td>Mordedura</td>
+              <td><span class="estado"><span class="pt"></span>Sin confirmar</span></td>
+              <td><span class="origen">Zoonosis Ushuaia</span></td>
+              <td class="col-acc"><button class="kebab" aria-label="Acciones del caso C-2026-0418"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button></td>
+            </tr>
+
+            <tr>
+              <td>
+                <span class="marks">
+                  <span class="mark relacionado" title="Posible evento relacionado: mismo animal, otra víctima">≈</span>
+                </span>
+              </td>
+              <td class="mono t-primary">C-2026-0417</td>
+              <td class="mono">11/09/2026<span class="t-sub mono">09:05</span></td>
+              <td class="t-primary">Ramiro Beltrán<span class="t-sub">34 años</span></td>
+              <td>Gobernador Paz 845<span class="t-sub">Ushuaia</span></td>
+              <td>Perro<span class="t-sub">Grande</span></td>
+              <td>Mordedura</td>
+              <td>
+                <span class="estado e-seguimiento"><span class="pt"></span>En seguimiento</span>
+                <span class="espera">Pendiente de certificado</span>
+              </td>
+              <td><span class="origen">Zoonosis Ushuaia</span></td>
+              <td class="col-acc"><button class="kebab" aria-label="Acciones del caso C-2026-0417"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button></td>
+            </tr>
+
+            <tr>
+              <td>
+                <span class="marks">
+                  <span class="mark relacionado" title="Posible evento relacionado: mismo animal, otra víctima">≈</span>
+                </span>
+              </td>
+              <td class="mono t-primary">C-2026-0416</td>
+              <td class="mono">11/09/2026<span class="t-sub mono">10:40</span></td>
+              <td class="t-primary">Nicolás Vera<span class="t-sub">41 años</span></td>
+              <td>Gobernador Paz 910<span class="t-sub">Ushuaia</span></td>
+              <td>Perro<span class="t-sub">Grande</span></td>
+              <td>Mordedura</td>
+              <td><span class="estado e-confirmado"><span class="pt"></span>Confirmado</span></td>
+              <td><span class="origen">Hospital Regional Ushuaia</span></td>
+              <td class="col-acc"><button class="kebab" aria-label="Acciones del caso C-2026-0416"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button></td>
+            </tr>
+
+            <tr>
+              <td>
+                <span class="marks">
+                  <span class="mark ciudadano" title="Origen ciudadano sin verificar">?</span>
+                </span>
+              </td>
+              <td class="mono t-primary">C-2026-0415</td>
+              <td class="mono">09/09/2026<span class="t-sub mono">18:40</span></td>
+              <td class="t-primary">Lucía Ferreyra<span class="t-sub">29 años</span></td>
+              <td>Perito Moreno 320<span class="t-sub">Río Grande</span></td>
+              <td>Perro<span class="t-sub">Chico</span></td>
+              <td>Lesión compatible</td>
+              <td><span class="estado"><span class="pt"></span>Sin confirmar</span></td>
+              <td><span class="origen">Canal ciudadano</span></td>
+              <td class="col-acc"><button class="kebab" aria-label="Acciones del caso C-2026-0415"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button></td>
+            </tr>
+
+            <tr>
+              <td>
+                <span class="marks">
+                  <span class="mark duplicado" title="Posible duplicado de otro caso"></span>
+                </span>
+              </td>
+              <td class="mono t-primary">C-2026-0411</td>
+              <td class="mono">06/09/2026<span class="t-sub mono">11:15</span></td>
+              <td class="t-primary">Joaquín Ojeda<span class="t-sub">12 años</span></td>
+              <td>San Martín 1502<span class="t-sub">Río Grande</span></td>
+              <td>Perro<span class="t-sub">Grande</span></td>
+              <td>Mordedura</td>
+              <td>
+                <span class="estado e-unificado"><span class="pt"></span>Unificado en otro caso</span>
+                <span class="unificado-ref mono">→ C-2026-0402</span>
+              </td>
+              <td><span class="origen">Hospital Regional RG</span></td>
+              <td class="col-acc"><button class="kebab" aria-label="Acciones del caso C-2026-0411"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button></td>
+            </tr>
+
+            <tr>
+              <td><span class="marks"></span></td>
+              <td class="mono t-primary">C-2026-0409</td>
+              <td class="mono">04/09/2026<span class="t-sub mono">20:10</span></td>
+              <td class="t-primary">Elena Quintana<span class="t-sub">61 años</span></td>
+              <td>Magallanes 77<span class="t-sub">Ushuaia</span></td>
+              <td>Gato<span class="t-sub">Chico</span></td>
+              <td>Arañazo</td>
+              <td><span class="estado e-confirmado"><span class="pt"></span>Confirmado</span></td>
+              <td><span class="origen">Zoonosis Ushuaia</span></td>
+              <td class="col-acc"><button class="kebab" aria-label="Acciones del caso C-2026-0409"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button></td>
+            </tr>
+
+            <tr>
+              <td>
+                <span class="marks">
+                  <span class="mark incompleto" title="Incompleto: faltan datos obligatorios">!</span>
+                </span>
+              </td>
+              <td class="mono t-primary">C-2026-0404</td>
+              <td class="mono">01/09/2026<span class="t-sub mono">08:30</span></td>
+              <td class="t-primary">Tomás Aguirre<span class="t-sub">45 años</span></td>
+              <td>Alem 2190<span class="t-sub">Río Grande</span></td>
+              <td>Perro<span class="t-sub">Mediano</span></td>
+              <td>Mordedura</td>
+              <td>
+                <span class="estado e-seguimiento"><span class="pt"></span>En seguimiento</span>
+                <span class="espera">Pendiente de contacto</span>
+              </td>
+              <td><span class="origen">Hospital Regional RG</span></td>
+              <td class="col-acc"><button class="kebab" aria-label="Acciones del caso C-2026-0404"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button></td>
+            </tr>
+
+            <tr>
+              <td><span class="marks"></span></td>
+              <td class="mono t-primary">C-2026-0398</td>
+              <td class="mono">27/08/2026<span class="t-sub mono">16:55</span></td>
+              <td class="t-primary">Valentina Núñez<span class="t-sub">8 años</span></td>
+              <td>Karukinká 540<span class="t-sub">Tolhuin</span></td>
+              <td>Perro<span class="t-sub">Mediano</span></td>
+              <td>Mordedura</td>
+              <td><span class="estado e-finalizado"><span class="pt"></span>Finalizado</span></td>
+              <td><span class="origen">CADIC</span></td>
+              <td class="col-acc"><button class="kebab" aria-label="Acciones del caso C-2026-0398"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button></td>
+            </tr>
+
+            <tr>
+              <td>
+                <span class="marks">
+                  <span class="mark ciudadano" title="Origen ciudadano sin verificar">?</span>
+                </span>
+              </td>
+              <td class="mono t-primary">C-2026-0393</td>
+              <td class="mono">22/08/2026<span class="t-sub mono">13:25</span></td>
+              <td class="t-primary">Héctor Maldonado<span class="t-sub">52 años</span></td>
+              <td>Rivadavia 610<span class="t-sub">Ushuaia</span></td>
+              <td>Perro<span class="t-sub">Grande</span></td>
+              <td>Lesión compatible</td>
+              <td><span class="estado e-desestimado"><span class="pt"></span>Desestimado</span></td>
+              <td><span class="origen">Canal ciudadano</span></td>
+              <td class="col-acc"><button class="kebab" aria-label="Acciones del caso C-2026-0393"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button></td>
+            </tr>
+
+            <tr>
+              <td><span class="marks"></span></td>
+              <td class="mono t-primary">C-2026-0388</td>
+              <td class="mono">18/08/2026<span class="t-sub mono">07:45</span></td>
+              <td class="t-primary">Sofía Ledesma<span class="t-sub">23 años</span></td>
+              <td>Maipú 1180<span class="t-sub">Ushuaia</span></td>
+              <td>Perro<span class="t-sub">Chico</span></td>
+              <td>Mordedura</td>
+              <td><span class="estado e-confirmado"><span class="pt"></span>Confirmado</span></td>
+              <td><span class="origen">Zoonosis Ushuaia</span></td>
+              <td class="col-acc"><button class="kebab" aria-label="Acciones del caso C-2026-0388"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button></td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tablefoot">
+        <div class="rows-per-page">
+          <span>Filas por página</span>
+          <button class="select">10
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+        </div>
+
+        <span class="range">1–10 de 127</span>
+
+        <div class="pager">
+          <button class="pgbtn" disabled aria-label="Página anterior">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+          </button>
+          <button class="pgnum" aria-current="page">1</button>
+          <button class="pgnum">2</button>
+          <button class="pgnum">3</button>
+          <span class="pgnum" aria-hidden="true">…</span>
+          <button class="pgnum">13</button>
+          <button class="pgbtn" aria-label="Página siguiente">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <div class="legend">
+      <span><span class="mark incompleto" title="Incompleto">!</span> Incompleto</span>
+      <span><span class="mark duplicado" title="Posible duplicado"></span> Posible duplicado</span>
+      <span><span class="mark relacionado" title="Posible evento relacionado">≈</span> Posible evento relacionado <span style="color:var(--ink-3)">— mismo animal, otra víctima. No se fusiona.</span></span>
+      <span><span class="mark ciudadano" title="Origen ciudadano sin verificar">?</span> Origen ciudadano sin verificar</span>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var btn = document.getElementById('theme-toggle');
+    var sun = document.getElementById('icon-sun');
+    var moon = document.getElementById('icon-moon');
+
+    function currentIsDark() {
+      var attr = root.getAttribute('data-theme');
+      if (attr === 'dark') return true;
+      if (attr === 'light') return false;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    function paint() {
+      var dark = currentIsDark();
+      sun.style.display = dark ? 'none' : '';
+      moon.style.display = dark ? '' : 'none';
+      btn.setAttribute('aria-label', dark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro');
+    }
+
+    btn.addEventListener('click', function () {
+      root.setAttribute('data-theme', currentIsDark() ? 'light' : 'dark');
+      paint();
+    });
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paint);
+    paint();
+  })();
+</script>
+
+</body></html>

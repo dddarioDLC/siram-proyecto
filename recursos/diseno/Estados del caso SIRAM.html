@@ -1,0 +1,169 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Copia local del artifact https://claude.ai/artifact/Gg47mG6DXMJxidHcLJD5yY (2026-10-07) -->
+<title>Estados del caso SIRAM</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: una columna de lectura; tres ejes como bloques hermanos, luego un ejemplo de fila y el ciclo de la denuncia. Tokens del sistema de diseño SIRAM. */
+:root{
+  --ground:#F6F7F7;--surface:#FFFFFF;--surface-2:#ECF0EF;
+  --ink:#16211F;--ink-2:#4A5856;--ink-3:#6E7C7A;
+  --line:#D8DEDD;--line-soft:#E7ECEB;
+  --accent:#00776F;--accent-soft:#DDEFEC;
+  --ok:#2E7D32;--warn:#B26A00;--crit:#B3261E;--info:#00668F;--dup:#6B4FA8;--rel:#9A5B2D;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Source Sans 3",-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0F1514;--surface:#171F1E;--surface-2:#1E2827;
+  --ink:#E9EEED;--ink-2:#AAB7B5;--ink-3:#7E8C8A;
+  --line:#2B3837;--line-soft:#222D2C;
+  --accent:#38C6B7;--accent-soft:#0E302C;
+  --ok:#72C076;--warn:#E0A233;--crit:#E8776B;--info:#55B5DF;--dup:#A98EDC;--rel:#D9955C;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --ground:#0F1514;--surface:#171F1E;--surface-2:#1E2827;
+  --ink:#E9EEED;--ink-2:#AAB7B5;--ink-3:#7E8C8A;
+  --line:#2B3837;--line-soft:#222D2C;
+  --accent:#38C6B7;--accent-soft:#0E302C;
+  --ok:#72C076;--warn:#E0A233;--crit:#E8776B;--info:#55B5DF;--dup:#A98EDC;--rel:#D9955C;
+  color-scheme:dark}
+
+body{margin:0;background:var(--ground);color:var(--ink);font:16px/1.55 var(--f-body);padding-inline:16px;padding-block:32px 56px}
+.wrap{max-width:760px;margin:0 auto;display:grid;gap:40px}
+header{display:grid;gap:8px}
+.eyebrow{font:500 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h1{font:800 clamp(28px,5vw,38px)/1.1 var(--f-display);margin:0;text-wrap:balance}
+h2{font:600 20px/1.25 var(--f-display);margin:0;text-wrap:balance}
+p{margin:0;color:var(--ink-2);max-width:65ch}
+.lede{font-size:17px}
+code{font:13px var(--f-mono);color:var(--ink-2);background:var(--surface-2);padding:1px 6px;border-radius:4px}
+
+.axis{display:grid;gap:14px}
+.axis-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px}
+.axis-tag{font:500 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.rule{font:600 13px var(--f-body);color:var(--ink-2);background:var(--surface-2);border-radius:999px;padding:2px 10px}
+
+.list{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.list li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px;align-items:center;padding:12px 16px;border-top:1px solid var(--line-soft)}
+.list li:first-child{border-top:0}
+.list .note{grid-column:1/-1;font-size:14px;color:var(--ink-3)}
+
+.pill{display:inline-flex;align-items:center;gap:8px;font:600 14px var(--f-body);padding:3px 12px 3px 10px;border-radius:999px;background:color-mix(in srgb,var(--c) 12%,transparent);color:var(--c);width:max-content}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c)}
+.wait{font:600 14px var(--f-body);color:var(--warn);display:inline-flex;gap:8px;align-items:center}
+.wait::before{content:"";width:12px;height:12px;border:2px solid var(--warn);border-radius:50%;border-right-color:transparent}
+.mark{display:inline-flex;align-items:center;gap:10px;font:600 14px var(--f-body);color:var(--ink)}
+.ico{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:5px;font:600 12px var(--f-mono);color:var(--surface);background:var(--c)}
+
+.why{background:var(--accent-soft);border-radius:10px;padding:16px 18px;display:grid;gap:6px}
+.why strong{font-family:var(--f-display);font-weight:600;color:var(--ink)}
+.why p{color:var(--ink)}
+
+.table-scroll{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+th{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);text-align:left;padding:10px 14px;border-bottom:1px solid var(--line)}
+td{padding:12px 14px;border-top:1px solid var(--line-soft);vertical-align:top}
+tr:first-child td{border-top:0}
+.id{display:flex;align-items:center;gap:6px;font:500 13px var(--f-mono);white-space:nowrap}
+.id .ico{width:18px;height:18px;font-size:10px}
+.stack{display:grid;gap:4px}
+.sub{font-size:13px;color:var(--ink-3)}
+.sub.w{color:var(--warn);font-weight:600}
+
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.flow .arrow{color:var(--ink-3);font-family:var(--f-mono)}
+footer{font-size:13px;color:var(--ink-3);border-top:1px solid var(--line);padding-top:16px}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">SIRAM · Panel interno</span>
+    <h1>Estados de un caso</h1>
+    <p class="lede">Un caso no tiene un solo estado: tiene tres cosas a la vez. Cada una vive en su propio eje y ninguna pisa a las otras.</p>
+  </header>
+
+  <section class="axis" aria-labelledby="e1">
+    <div class="axis-head"><span class="axis-tag">Eje 1</span><h2 id="e1">Estado del caso</h2><span class="rule">Excluyente · uno solo a la vez</span></div>
+    <p>Es el ciclo de vida. Se guarda en <code>caso.estado</code>.</p>
+    <ul class="list">
+      <li><span class="pill" style="--c:var(--ink-3)">Sin confirmar</span><code>sin_confirmar</code></li>
+      <li><span class="pill" style="--c:var(--info)">Confirmado</span><code>confirmado</code></li>
+      <li><span class="pill" style="--c:var(--warn)">En seguimiento</span><code>en_seguimiento</code></li>
+      <li><span class="pill" style="--c:var(--ok)">Finalizado</span><code>finalizado</code></li>
+      <li><span class="pill" style="--c:var(--crit)">Desestimado</span><code>desestimado</code></li>
+      <li><span class="pill" style="--c:var(--dup)">Unificado en otro caso</span><code>unificado</code>
+        <span class="note">Apunta al caso que lo absorbió con <code>unificado_en_caso_id</code>.</span></li>
+    </ul>
+  </section>
+
+  <section class="axis" aria-labelledby="e2">
+    <div class="axis-head"><span class="axis-tag">Eje 2</span><h2 id="e2">Motivo de espera</h2><span class="rule">Solo si está En seguimiento</span></div>
+    <p>Responde por qué el caso está detenido. Se guarda en <code>caso.motivo_espera</code>.</p>
+    <ul class="list">
+      <li><span class="wait">Pendiente de contacto</span><code>contacto</code></li>
+      <li><span class="wait">Pendiente de respuesta</span><code>respuesta</code></li>
+      <li><span class="wait">Pendiente de certificado</span><code>certificado</code></li>
+    </ul>
+  </section>
+
+  <section class="axis" aria-labelledby="e3">
+    <div class="axis-head"><span class="axis-tag">Eje 3</span><h2 id="e3">Marcas</h2><span class="rule">Paralelas · conviven entre sí</span></div>
+    <p>Son el semáforo. Pueden aparecer con cualquier estado, varias a la vez.</p>
+    <ul class="list">
+      <li><span class="mark"><span class="ico" style="--c:var(--warn)">!</span>Incompleto</span></li>
+      <li><span class="mark"><span class="ico" style="--c:var(--dup)">=</span>Posible duplicado</span>
+        <span class="note">Coincide la persona. Si se confirma, los casos se consolidan y uno queda unificado.</span></li>
+      <li><span class="mark"><span class="ico" style="--c:var(--rel)">~</span>Posible evento relacionado</span>
+        <span class="note">Mismo animal, otra víctima. Los casos se vinculan pero nunca se fusionan.</span></li>
+      <li><span class="mark"><span class="ico" style="--c:var(--info)">?</span>Origen ciudadano sin verificar</span></li>
+    </ul>
+  </section>
+
+  <div class="why">
+    <strong>Por qué tres ejes</strong>
+    <p>Si todo viviera en un solo campo, un caso en seguimiento, incompleto y sospechoso de duplicado obligaría a elegir qué mostrar, y se perderían dos datos. En pantalla, el estado va como píldora en su columna y las marcas como íconos pegados al identificador.</p>
+  </div>
+
+  <section class="axis" aria-labelledby="ej">
+    <div class="axis-head"><span class="axis-tag">Ejemplo</span><h2 id="ej">Cómo se ven juntos en la bandeja</h2></div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Caso</th><th>Estado</th><th>Lectura</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="id"><span class="ico" style="--c:var(--warn)">!</span><span class="ico" style="--c:var(--dup)">=</span>C-2026-0398</span></td>
+            <td><div class="stack"><span class="pill" style="--c:var(--warn)">En seguimiento</span><span class="sub w">Pendiente de certificado</span></div></td>
+            <td>Los tres ejes a la vez: estado, motivo de espera y dos marcas.</td>
+          </tr>
+          <tr>
+            <td><span class="id">C-2026-0411</span></td>
+            <td><div class="stack"><span class="pill" style="--c:var(--dup)">Unificado</span><span class="sub">→ C-2026-0402</span></div></td>
+            <td>Duplicado ya consolidado. Conserva su trazabilidad.</td>
+          </tr>
+          <tr>
+            <td><span class="id"><span class="ico" style="--c:var(--info)">?</span>C-2026-0415</span></td>
+            <td><span class="pill" style="--c:var(--ink-3)">Sin confirmar</span></td>
+            <td>Entró por el formulario ciudadano y nadie lo verificó aún.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="axis" aria-labelledby="den">
+    <div class="axis-head"><span class="axis-tag">Aparte</span><h2 id="den">Estado de la denuncia</h2><span class="rule">Ciclo propio, más corto</span></div>
+    <p>La denuncia es la comunicación cruda que llega; el caso consolida una o más. Por eso cada una tiene su enumerado. Se guarda en <code>denuncia.estado</code>.</p>
+    <div class="flow">
+      <span class="pill" style="--c:var(--ink-3)">Recibida</span><span class="arrow">›</span>
+      <span class="pill" style="--c:var(--info)">En revisión</span><span class="arrow">›</span>
+      <span class="pill" style="--c:var(--ok)">Incorporada</span>
+      <span class="pill" style="--c:var(--rel)">Vinculada</span>
+      <span class="pill" style="--c:var(--crit)">Desestimada</span>
+    </div>
+  </section>
+
+  <footer>Fuentes: «De Delta a SIRAM» (los tres ejes) y «De las pantallas al modelo» (enumerados de CASO y DENUNCIA). Los casos del ejemplo son ilustrativos.</footer>
+</div>

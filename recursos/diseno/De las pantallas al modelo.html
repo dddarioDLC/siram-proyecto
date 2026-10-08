@@ -1,0 +1,622 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>De las pantallas al modelo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #F6F7F7;
+    --surface: #FFFFFF;
+    --surface-2: #ECF0EF;
+    --ink: #16211F;
+    --ink-2: #4A5856;
+    --ink-3: #6E7C7A;
+    --line: #D8DEDD;
+    --line-soft: #E7ECEB;
+    --accent: #00776F;
+    --accent-soft: #DDEFEC;
+    --ok: #2E7D32;
+    --warn: #B26A00;
+    --crit: #B3261E;
+    --info: #00668F;
+    --dup: #6B4FA8;
+    --dup-soft: #EAE4F5;
+    --rel: #9A5B2D;
+    --rel-soft: #F5E9DC;
+    --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --f-body: "Source Sans 3", -apple-system, "Segoe UI", Roboto, sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0F1514; --surface: #171F1E; --surface-2: #1E2827;
+      --ink: #E9EEED; --ink-2: #AAB7B5; --ink-3: #7E8C8A;
+      --line: #2B3837; --line-soft: #222D2C;
+      --accent: #38C6B7; --accent-soft: #0E302C;
+      --ok: #72C076; --warn: #E0A233; --crit: #E8776B; --info: #55B5DF;
+      --dup: #A98EDC; --dup-soft: #221B33;
+      --rel: #D9955C; --rel-soft: #2E2317;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0F1514; --surface: #171F1E; --surface-2: #1E2827;
+    --ink: #E9EEED; --ink-2: #AAB7B5; --ink-3: #7E8C8A;
+    --line: #2B3837; --line-soft: #222D2C;
+    --accent: #38C6B7; --accent-soft: #0E302C;
+    --ok: #72C076; --warn: #E0A233; --crit: #E8776B; --info: #55B5DF;
+    --dup: #A98EDC; --dup-soft: #221B33;
+    --rel: #D9955C; --rel-soft: #2E2317;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground); color: var(--ink);
+    font-family: var(--f-body); font-size: 16.5px; line-height: 1.6; margin: 0;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding-inline: 20px; padding-block: 0 72px; }
+
+  .masthead { padding-block: 56px 32px; border-bottom: 2px solid var(--ink); }
+  .eyebrow {
+    font-family: var(--f-mono); font-size: 12px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--f-display); font-weight: 800;
+    font-size: clamp(2rem, 5.5vw, 3.1rem); line-height: 1.05;
+    letter-spacing: -.02em; margin: 0 0 18px; text-wrap: balance;
+  }
+  .standfirst { font-size: 1.1rem; color: var(--ink-2); max-width: 62ch; margin: 0; }
+
+  main { padding-block: 34px 0; }
+  section { margin-bottom: 60px; }
+  section > p, section > ul, section > ol { max-width: 68ch; }
+  h2 {
+    font-family: var(--f-display); font-weight: 800; font-size: 1.55rem;
+    letter-spacing: -.012em; margin: 0 0 6px; text-wrap: balance;
+  }
+  .sect-num {
+    font-family: var(--f-mono); font-size: 12px; color: var(--accent);
+    letter-spacing: .08em; display: block; margin-bottom: 10px;
+  }
+  h3 {
+    font-family: var(--f-display); font-weight: 600; font-size: 1.08rem;
+    margin: 32px 0 8px;
+  }
+  .lede { color: var(--ink-2); margin: 10px 0 24px; max-width: 66ch; }
+  p { margin: 0 0 15px; }
+  strong { font-weight: 600; color: var(--ink); }
+  code, .mono { font-family: var(--f-mono); font-size: .875em; }
+  code {
+    background: var(--surface-2); padding: 1px 5px; border-radius: 3px;
+    border: 1px solid var(--line-soft);
+  }
+  ul { padding-left: 1.15em; margin: 0 0 15px; }
+  li { margin-bottom: 8px; }
+
+  .tw { overflow-x: auto; margin: 18px 0 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; padding: 9px 13px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  thead th {
+    font-family: var(--f-mono); font-size: 11.5px; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--ink-3); font-weight: 500;
+    background: var(--surface-2); border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.mono { font-family: var(--f-mono); font-size: 12.5px; }
+
+  figure { margin: 24px 0; }
+  figure svg { display: block; width: 100%; max-width: 100%; height: auto; }
+  figcaption { font-size: 13.5px; color: var(--ink-3); margin-top: 10px; max-width: 68ch; }
+  .figbox {
+    border: 1px solid var(--line); border-radius: 5px;
+    background: var(--surface); padding: 20px 18px;
+    overflow-x: auto;
+  }
+
+  pre.mermaid {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 5px; padding: 18px; margin: 20px 0 8px;
+    overflow-x: auto; text-align: center;
+  }
+
+  .note {
+    border-left: 3px solid var(--accent); background: var(--accent-soft);
+    padding: 14px 18px; margin: 20px 0; border-radius: 0 4px 4px 0;
+  }
+  .note.dup { border-left-color: var(--dup); background: var(--dup-soft); }
+  .note.rel { border-left-color: var(--rel); background: var(--rel-soft); }
+  .note p:last-child { margin-bottom: 0; }
+  .note .tag {
+    font-family: var(--f-mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: .09em; color: var(--ink-2); display: block; margin-bottom: 5px;
+  }
+
+  .ent {
+    border: 1px solid var(--line); border-left: 3px solid var(--accent);
+    border-radius: 4px; background: var(--surface);
+    padding: 16px 18px; margin: 16px 0;
+  }
+  .ent.new { border-left-color: var(--dup); }
+  .ent h4 {
+    font-family: var(--f-mono); font-size: 14px; font-weight: 500;
+    margin: 0 0 4px; color: var(--ink); letter-spacing: .02em;
+  }
+  .ent .why {
+    font-size: 13px; color: var(--ink-3); margin: 0 0 10px;
+    font-style: italic;
+  }
+  .ent p:last-child { margin-bottom: 0; font-size: 14.5px; color: var(--ink-2); }
+  .ent .attrs {
+    font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-2);
+    background: var(--surface-2); border-radius: 4px;
+    padding: 8px 10px; margin: 10px 0 0; line-height: 1.7;
+  }
+
+  footer {
+    border-top: 1px solid var(--line); padding-block: 26px 0; margin-top: 10px;
+    font-size: 14px; color: var(--ink-3); max-width: 68ch;
+  }
+  ::selection { background: var(--accent); color: var(--surface); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">SIRAM · modelo de datos</p>
+    <h1>De las pantallas al modelo</h1>
+    <p class="standfirst">
+      El boceto entidad-relación modela <em>el registro de denuncias</em>. El prototipo
+      terminó modelando <em>la gestión de casos</em>, que es otra capa. Acá está el modelo
+      rearmado desde las pantallas: cada entidad se justifica señalando algo que se ve.
+    </p>
+  </header>
+
+  <main>
+
+    <section>
+      <span class="sect-num">01</span>
+      <h2>Los dos mecanismos que el boceto no puede expresar</h2>
+      <p class="lede">
+        Antes del modelo completo, las dos cosas que el prototipo hace y el ER original
+        no tiene dónde guardar. Todo lo demás se deriva de acá.
+      </p>
+
+      <h3>Una denuncia no es un caso</h3>
+      <figure>
+        <div class="figbox">
+          <svg viewBox="0 0 700 220" role="img" aria-label="Una denuncia entra por el canal ciudadano y la revisión tiene tres salidas: incorporar, que crea un caso nuevo; vincular, que la suma como antecedente de un caso existente; y desestimar, que la archiva con un motivo. La denuncia nunca se borra.">
+            <defs>
+              <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+
+            <rect x="8" y="82" width="132" height="54" rx="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <text x="74" y="104" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" fill="currentColor">D-2026-0091</text>
+            <text x="74" y="122" text-anchor="middle" font-size="12" fill="currentColor" opacity=".65">denuncia recibida</text>
+
+            <line x1="140" y1="109" x2="216" y2="109" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+            <text x="178" y="100" text-anchor="middle" font-size="11.5" fill="currentColor" opacity=".7">revisión</text>
+
+            <rect x="218" y="82" width="104" height="54" rx="4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="4 3"/>
+            <text x="270" y="106" text-anchor="middle" font-size="12.5" fill="currentColor">un agente</text>
+            <text x="270" y="122" text-anchor="middle" font-size="12.5" fill="currentColor">decide</text>
+
+            <line x1="322" y1="96" x2="418" y2="42" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+            <text x="360" y="56" text-anchor="middle" font-size="11.5" fill="currentColor" opacity=".75">incorporar</text>
+            <rect x="420" y="16" width="170" height="50" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <text x="505" y="38" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" fill="currentColor">C-2026-0418</text>
+            <text x="505" y="55" text-anchor="middle" font-size="11.5" fill="currentColor" opacity=".65">caso nuevo</text>
+
+            <line x1="322" y1="109" x2="418" y2="109" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+            <text x="370" y="101" text-anchor="middle" font-size="11.5" fill="currentColor" opacity=".75">vincular</text>
+            <rect x="420" y="84" width="170" height="50" rx="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <text x="505" y="106" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" fill="currentColor">C-2026-0377</text>
+            <text x="505" y="123" text-anchor="middle" font-size="11.5" fill="currentColor" opacity=".65">caso existente</text>
+
+            <line x1="322" y1="122" x2="418" y2="178" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+            <text x="364" y="166" text-anchor="middle" font-size="11.5" fill="currentColor" opacity=".75">desestimar</text>
+            <rect x="420" y="152" width="170" height="50" rx="4" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".5"/>
+            <text x="505" y="174" text-anchor="middle" font-size="12.5" fill="currentColor" opacity=".7">archivada</text>
+            <text x="505" y="191" text-anchor="middle" font-size="11.5" fill="currentColor" opacity=".55">con motivo</text>
+
+            <text x="600" y="110" font-size="11.5" fill="currentColor" opacity=".6">la denuncia</text>
+            <text x="600" y="126" font-size="11.5" fill="currentColor" opacity=".6">nunca se borra</text>
+          </svg>
+        </div>
+        <figcaption>
+          Pantalla <strong>Pendientes de validación</strong>. La denuncia conserva su
+          identidad y su estado propio después de resolverse: por eso necesita tabla
+          propia y no puede ser «un caso sin confirmar».
+        </figcaption>
+      </figure>
+
+      <h3>Dos casos parecidos tienen dos desenlaces opuestos</h3>
+      <figure>
+        <div class="figbox">
+          <svg viewBox="0 0 700 250" role="img" aria-label="Dos casos con datos coincidentes generan una coincidencia con tipo y puntaje. Si el tipo es duplicado, se consolidan y uno queda unificado en el otro. Si el tipo es evento relacionado, quedan enlazados y los dos siguen activos.">
+            <defs>
+              <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+
+            <rect x="8" y="56" width="122" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <text x="69" y="83" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" fill="currentColor">C-2026-0418</text>
+
+            <rect x="8" y="140" width="122" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <text x="69" y="167" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" fill="currentColor">C-2026-0402</text>
+
+            <line x1="130" y1="78" x2="196" y2="106" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar2)"/>
+            <line x1="130" y1="162" x2="196" y2="134" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar2)"/>
+
+            <rect x="198" y="94" width="142" height="52" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <text x="269" y="114" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">Coincidencia</text>
+            <text x="269" y="132" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="currentColor" opacity=".7">tipo · 82/100</text>
+
+            <line x1="340" y1="108" x2="424" y2="52" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar2)" color="#6B4FA8"/>
+            <text x="372" y="66" text-anchor="middle" font-size="11.5" font-weight="600" fill="#6B4FA8">duplicado</text>
+            <rect x="426" y="14" width="262" height="72" rx="4" fill="none" stroke="#6B4FA8" stroke-width="1.6"/>
+            <text x="440" y="36" font-family="IBM Plex Mono, monospace" font-size="12.5" fill="currentColor">C-2026-0418</text>
+            <text x="540" y="36" font-size="12" fill="currentColor" opacity=".7">sobrevive</text>
+            <text x="440" y="58" font-family="IBM Plex Mono, monospace" font-size="12.5" fill="currentColor" opacity=".6">C-2026-0402</text>
+            <text x="540" y="58" font-size="12" fill="#6B4FA8">unificado en 0418</text>
+            <text x="440" y="76" font-size="11.5" fill="currentColor" opacity=".55">un solo registro vivo · irreversible</text>
+
+            <line x1="340" y1="132" x2="424" y2="188" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar2)" color="#9A5B2D"/>
+            <text x="366" y="180" text-anchor="middle" font-size="11.5" font-weight="600" fill="#9A5B2D">relacionado</text>
+            <rect x="426" y="154" width="262" height="72" rx="4" fill="none" stroke="#9A5B2D" stroke-width="1.6"/>
+            <text x="440" y="176" font-family="IBM Plex Mono, monospace" font-size="12.5" fill="currentColor">C-2026-0418</text>
+            <text x="540" y="176" font-size="12" fill="currentColor" opacity=".7">activo</text>
+            <text x="440" y="198" font-family="IBM Plex Mono, monospace" font-size="12.5" fill="currentColor">C-2026-0402</text>
+            <text x="540" y="198" font-size="12" fill="currentColor" opacity=".7">activo</text>
+            <text x="440" y="216" font-size="11.5" fill="#9A5B2D">dos víctimas distintas · reversible</text>
+          </svg>
+        </div>
+        <figcaption>
+          Pantalla <strong>Comparar registros</strong>. El mismo par de casos produce dos
+          resultados incompatibles según el tipo, así que el tipo, el puntaje y el resultado
+          de la revisión tienen que persistirse en algún lado. Ese lado es una entidad propia.
+        </figcaption>
+      </figure>
+    </section>
+
+    <section>
+      <span class="sect-num">02</span>
+      <h2>El modelo</h2>
+      <p class="lede">
+        Diez entidades. En violeta las que no existen en el boceto; el resto son las
+        originales, con cambios.
+      </p>
+
+      <pre class="mermaid">
+erDiagram
+    ORGANISMO ||--o{ USUARIO : agrupa
+    ORGANISMO ||--o{ DENUNCIA : aporta
+    USUARIO ||--o{ DENUNCIA : revisa
+    USUARIO ||--o{ CASO : registra
+    DENUNCIA }o--o| CASO : "se incorpora a"
+    CASO ||--o{ PARTICIPACION : involucra
+    PERSONA ||--o{ PARTICIPACION : "participa como"
+    CASO ||--|| ANIMAL : describe
+    CASO ||--o{ DOCUMENTO : adjunta
+    CASO ||--o{ COINCIDENCIA : "caso A"
+    CASO ||--o{ COINCIDENCIA : "caso B"
+    CASO ||--o| CASO : "unificado en"
+    TIPO_DENUNCIA ||--o{ CASO : clasifica
+    CASO ||--o{ AUDITORIA : registra
+    DENUNCIA ||--o{ AUDITORIA : registra
+
+    DENUNCIA {
+        id id PK
+        enum origen "organismo|ciudadano|csv"
+        id organismo_id FK "nulo si es ciudadana"
+        id usuario_id FK "nulo si es ciudadana"
+        datetime recibida_en
+        enum estado "recibida|en_revision|incorporada|vinculada|desestimada"
+        string motivo_desestimacion
+        text observacion_revision
+        json datos_crudos
+    }
+    CASO {
+        id id PK
+        enum estado "sin_confirmar|confirmado|en_seguimiento|finalizado|desestimado|unificado"
+        enum motivo_espera "contacto|respuesta|certificado"
+        id unificado_en_caso_id FK
+        date fecha_hecho
+        time hora_hecho
+        string ciudad
+        string lugar
+        point coordenadas
+        enum tipo_lugar
+        enum tipo_lesion
+        enum zona_cuerpo
+        enum gravedad
+        bool atencion_medica
+    }
+    COINCIDENCIA {
+        id id PK
+        id caso_a_id FK
+        id caso_b_id FK
+        enum tipo "duplicado|evento_relacionado"
+        int puntaje
+        json senales
+        enum revision "pendiente|resuelta|descartada"
+        id resuelta_por FK
+    }
+    PERSONA {
+        id id PK
+        string nombre
+        string dni "puede faltar"
+        int edad
+        string telefono
+        string correo
+        string domicilio
+    }
+    PARTICIPACION {
+        id caso_id FK
+        id persona_id FK
+        enum rol "victima|denunciante"
+        string vinculo "madre, padre, vecino"
+    }
+    ANIMAL {
+        id id PK
+        enum especie
+        enum tamano
+        string color
+        string raza
+        enum sexo
+        enum origen_tenencia
+        bool reincidente
+        string zona_domicilio
+    }
+    AUDITORIA {
+        id id PK
+        enum entidad "caso|denuncia"
+        id entidad_id
+        enum actor "usuario|sistema"
+        id usuario_id FK
+        string accion
+        datetime fecha
+    }
+      </pre>
+    </section>
+
+    <section>
+      <span class="sect-num">03</span>
+      <h2>Las entidades nuevas</h2>
+      <p class="lede">
+        Tres. Cada una nace de algo concreto que se ve en el prototipo.
+      </p>
+
+      <div class="ent new">
+        <h4>DENUNCIA</h4>
+        <p class="why">Sale de: la cola de Pendientes de validación.</p>
+        <p>
+          La comunicación cruda, tal como llegó, antes de que nadie la valide. Tiene
+          identidad propia (<code>D-2026-0091</code>), su propia antigüedad —la cola ordena
+          por «espera hace 6 días»— y su propio ciclo corto. Se resuelve hacia un caso,
+          pero no desaparece: el resultado de la verificación queda registrado en ella.
+        </p>
+        <p class="attrs">
+          <strong>origen</strong> es el campo que resuelve el problema más silencioso del
+          boceto: una denuncia ciudadana <em>no tiene usuario</em>, así que el organismo
+          no se puede deducir por <code>Registra → Usuario → Pertenece</code>. La columna
+          «Origen» de la bandeja quedaría vacía para los 26 casos del canal ciudadano.
+        </p>
+      </div>
+
+      <div class="ent new">
+        <h4>COINCIDENCIA</h4>
+        <p class="why">Sale de: la pantalla Comparar registros y las marcas de la bandeja.</p>
+        <p>
+          Une dos casos y guarda <strong>por qué</strong> los une: el tipo, el puntaje sobre
+          100, qué señales coincidieron y cuáles no se pudieron evaluar, y qué decidió el
+          agente. Con una sola entidad se resuelven la marca violeta, la marca tierra, el
+          panel de confianza y el historial de la decisión.
+        </p>
+        <p class="attrs">
+          <strong>senales</strong> guarda el detalle que la pantalla muestra: teléfono
+          idéntico, fecha dentro de ±1 día, nombre similar, y el DNI como
+          <em>no evaluable</em> —distinto de «no coincide»—.
+        </p>
+      </div>
+
+      <div class="ent new">
+        <h4>PARTICIPACION</h4>
+        <p class="why">Sale de: el campo <span class="mono">P9</span> de la ficha del caso.</p>
+        <p>
+          La ficha muestra a Micaela Sosa, de 7 años, como víctima, y a Carla Sosa, su madre,
+          como denunciante. Con una sola entidad <code>Victima</code> eso no se puede
+          representar. Separar persona de su rol en el caso también permite que la misma
+          persona aparezca como víctima en un caso y como denunciante en otro.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <span class="sect-num">04</span>
+      <h2>Los cambios sobre las entidades existentes</h2>
+
+      <div class="tw">
+        <table>
+          <thead><tr><th>Entidad</th><th>Cambio</th><th>De dónde sale</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="mono">CASO</td>
+              <td>Gana el estado del ciclo de vida, el motivo de espera y la auto-relación <code>unificado_en_caso_id</code>.</td>
+              <td>Columna Estado de la bandeja, con «Pendiente de certificado» debajo, y la fila <span class="mono">C-2026-0411</span> con su «→ C-2026-0402».</td>
+            </tr>
+            <tr>
+              <td class="mono">ESTADO</td>
+              <td>Desaparece como entidad. Era un catálogo colgado de la denuncia; ahora son dos enumerados, uno en cada entidad, porque los ciclos son distintos.</td>
+              <td>La denuncia se resuelve en un paso; el caso recorre seis estados.</td>
+            </tr>
+            <tr>
+              <td class="mono">VICTIMA</td>
+              <td>Pasa a ser <code>PERSONA</code> + <code>PARTICIPACION</code>. El DNI queda explícitamente opcional.</td>
+              <td>El formulario ciudadano no pide documento (<span class="mono">HZ01</span>), y el modelo tiene que poder guardar esa ausencia sin romperse.</td>
+            </tr>
+            <tr>
+              <td class="mono">AUDITORIA</td>
+              <td>Deja de colgar solo de casos: pasa a ser polimórfica sobre caso y denuncia.</td>
+              <td>En la validación se edita una denuncia para completarle el DNI por teléfono. Eso también necesita rastro.</td>
+            </tr>
+            <tr>
+              <td class="mono">ANIMAL</td>
+              <td>Queda como descripción del caso, sin identidad propia entre casos.</td>
+              <td>Ver abajo — es la decisión más discutible de todo el modelo.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <span class="sect-num">05</span>
+      <h2>Lo que decidí no modelar</h2>
+
+      <div class="note rel">
+        <span class="tag">La identidad del animal</span>
+        <p>
+          El boceto trata a <code>Animal</code> como entidad con identidad propia, vinculada
+          a varias denuncias y varios casos. Eso promete poder afirmar «este perro mordió
+          tres veces» — y el campo <span class="mono">A12</span> «mordedor reincidente»
+          empuja en esa dirección.
+        </p>
+        <p>
+          Pero los datos que llegan son <strong>descriptivos, no identificatorios</strong>:
+          perro, mediano, marrón y blanco, ajeno desconocido. Con eso no se identifica un
+          animal, se lo describe. Dos denuncias del mismo perro son indistinguibles de dos
+          perros parecidos del mismo barrio.
+        </p>
+        <p>
+          Por eso, en este modelo, el animal es un bloque de atributos del caso, y lo que
+          une dos casos del mismo perro es una <code>COINCIDENCIA</code> de tipo evento
+          relacionado, <strong>confirmada por una persona</strong>. El sistema propone; no
+          resuelve una identidad que los datos no contienen.
+        </p>
+        <p>
+          Si más adelante quieren identidad real, hay que decidir qué la establece —¿el chip?
+          ¿la confirmación de un agente? ¿el domicilio declarado en <span class="mono">A7</span>?—
+          y ahí sí aparece una entidad <code>ANIMAL_IDENTIFICADO</code> separada de la
+          descripción. Es una decisión de relevamiento, no de modelado.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <span class="sect-num">06</span>
+      <h2>Lo que queda por resolver</h2>
+      <ul>
+        <li>
+          <strong>Las coordenadas.</strong> Puse <code>coordenadas</code> en el caso porque
+          el mapa (R.22) y la señal de proximidad del motor las necesitan. Pero hoy
+          <span class="mono">H4</span> llega como texto libre en un formulario y como calle
+          más número en el otro: falta definir cuándo y cómo se geocodifica.
+        </li>
+        <li>
+          <strong>La lesión múltiple.</strong> La modelé como enumerados en el caso, con
+          «Múltiples» como un valor más. Si hace falta registrar cada lesión por separado
+          —zona, gravedad y tratamiento de cada una— pasa a ser una entidad aparte.
+        </li>
+        <li>
+          <strong>La denuncia desglosada.</strong> El hallazgo <span class="mono">HZ08</span>
+          sigue abierto: en Zoonosis, si el certificado no llega en 48 horas hábiles la
+          denuncia se desglosa y se devuelve, pero en SIRAM no se dan de baja denuncias.
+          Probablemente sea un estado más, pero eso se define con el cliente.
+        </li>
+        <li>
+          <strong>Alcance entre organismos.</strong> El modelo permite que cualquier agente
+          vea cualquier caso. Si Zoonosis no debe ver los casos cargados por Salud, hacen
+          falta reglas de visibilidad que hoy no están definidas.
+        </li>
+      </ul>
+    </section>
+
+    <footer>
+      Modelo derivado del prototipo de SIRAM y de la matriz de comparación de formularios
+      del 22·09·2026. Los códigos <span class="mono">P·H·A·L·D</span> y
+      <span class="mono">HZ</span> remiten a esa planilla.
+    </footer>
+
+  </main>
+</div>
+
+<!--claude-mermaid-runtime-begin:3477-->
+<style>.mermaid-diagram{margin-block:4px}.mermaid-diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}</style>
+<script src="/_runtime/mermaid-11.16.1.min.js"></script>
+<script>(function(){
+var CFG={"palettes":{"light":{"surface":"#f4efe4","text":"#42392e","line":"#8a7f6d","border":"#7a6c52","bg":"#fffdf8"},"dark":{"surface":"#262b34","text":"#f2f3f5","line":"#a8adb8","border":"#9aa4b8","bg":"#1f232b"}}};
+if(typeof mermaid==='undefined')return;
+var pres=Array.prototype.slice.call(document.querySelectorAll('pre.mermaid')).filter(function(p){if(p.hasAttribute('data-claude-mermaid-claimed'))return false;p.setAttribute('data-claude-mermaid-claimed','1');return true;});
+if(!pres.length)return;
+var mq=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+var root=document.documentElement;
+var items=pres.map(function(pre){
+var mount=document.createElement('div');mount.className='mermaid-diagram';
+return {pre:pre,mount:mount,src:pre.textContent||''};
+});
+var seq=0;
+var renderGen=0;
+var lastKey='';
+function pageBg(fallback){
+var els=[document.body,document.documentElement];
+for(var i=0;i<els.length;i++){
+var c=els[i]&&getComputedStyle(els[i]).backgroundColor;
+if(c&&c!=='transparent'&&c!=='rgba(0, 0, 0, 0)')return c;
+}
+return fallback;
+}
+function render(){
+var theme=root.getAttribute('data-theme');
+var dark=theme==='dark'||(!!(mq&&mq.matches)&&theme!=='light');
+var pal=dark?CFG.palettes.dark:CFG.palettes.light;
+var bg=pageBg(pal.bg);
+var key=(dark?'d':'l')+'|'+bg;
+if(key===lastKey)return;
+lastKey=key;
+var gen=++renderGen;
+var font=getComputedStyle(document.body).fontFamily||'sans-serif';
+var nat={useMaxWidth:false};
+mermaid.initialize({
+startOnLoad:false,securityLevel:'strict',theme:'base',
+flowchart:nat,sequence:nat,er:nat,state:nat,class:nat,pie:nat,
+gantt:nat,journey:nat,timeline:nat,gitGraph:nat,mindmap:nat,xyChart:nat,
+quadrantChart:nat,sankey:nat,c4:nat,requirement:nat,block:nat,
+packet:nat,kanban:nat,architecture:nat,radar:nat,
+themeVariables:{background:bg,mainBkg:pal.surface,primaryColor:pal.surface,
+primaryTextColor:pal.text,lineColor:pal.line,primaryBorderColor:pal.border,
+nodeBorder:pal.border,clusterBorder:pal.border,edgeLabelBackground:bg,
+clusterBkg:'rgba(127,127,127,0.07)',titleColor:pal.text,
+darkMode:dark,rowOdd:bg,rowEven:'rgba(127,127,127,0.07)',
+attributeBackgroundColorOdd:bg,attributeBackgroundColorEven:'rgba(127,127,127,0.07)',
+fontSize:'16px',fontFamily:font},
+themeCSS:'.node rect, .node circle, .node polygon, .node path, .cluster rect { stroke-width: 2px; }'
+});
+items.forEach(function(it){
+var id='claude-mermaid-'+seq++;
+mermaid.render(id,it.src).then(function(r){
+if(gen!==renderGen)return;
+var prev=it.pre.previousElementSibling;
+if(prev&&prev.className==='mermaid-diagram'&&prev!==it.mount)return;
+it.mount.innerHTML=r.svg;
+if(!it.mount.parentNode)it.pre.parentNode.insertBefore(it.mount,it.pre);
+it.pre.style.display='none';
+},function(){
+var scratch=document.getElementById(id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+scratch=document.getElementById('d'+id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+if(gen!==renderGen)return;
+if(it.mount.parentNode)it.mount.parentNode.removeChild(it.mount);
+it.pre.style.display='';
+});
+});
+}
+render();
+if(mq&&mq.addEventListener)mq.addEventListener('change',render);
+if(typeof MutationObserver!=='undefined')new MutationObserver(render).observe(root,{attributes:true,attributeFilter:['data-theme']});
+})();</script>
+<!--claude-mermaid-runtime-end-->
+
+</body></html>
