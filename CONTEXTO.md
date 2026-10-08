@@ -16,7 +16,9 @@ Antes de escribir una línea de código o proponer una pantalla, asumí esto:
    **No vuelvas a relevar ni a reinventar lo que ya está decidido acá.**
 2. **El lenguaje visual ya existe.** Se deriva del módulo `modulos/servicios-publicos` de
    **Delta**, el backoffice React de la Municipalidad de Ushuaia (ver §8). SIRAM hereda su
-   *lenguaje y patrones*, **no su código**: tiene stack propio y no vive en el monorepo de Delta.
+   *lenguaje visual*. Sus *paquetes funcionales* (componentes, queries, formularios, ventanas) son
+   **referencia de solo lectura**: se estudian para escribir **componentes propios** de SIRAM, pero no
+   se instalan ni se importan. SIRAM tiene repo propio y no vive en el monorepo de Delta.
 3. **El prototipo es la referencia de comportamiento.** `diseno/prototipo-siram.html` (copia en revisión del original de `recursos/`)
    muestra cómo se ven y se comportan las pantallas principales, con datos de ejemplo realistas.
    Abrilo en un navegador antes de implementar cualquier pantalla.
@@ -98,12 +100,31 @@ casos de ataques y mordeduras de **perros y gatos** a personas en Tierra del Fue
 | 25/09/2026 | Lenguaje de diseño «De Delta a SIRAM», prototipo navegable, modelo ER rearmado desde las pantallas |
 | 05/10/2026 | «De las pantallas al modelo» (modelo completo en Mermaid) |
 | 08/10/2026 | Se habilita el código. Etapa actual: **cerrar el modelo de datos** antes de implementar |
+| 08/10/2026 | Pizarrón del equipo: qué propone SIRAM, qué falta resolver, dudas técnicas y de dominio (abajo) |
+
+**Qué propone SIRAM** (la respuesta a la necesidad, contada como narrativa de uso con ejemplos prácticos):
+- Seguir un caso a través de sus estados.
+- Sacar un caso del registro: desestimarlo si es falso, o consolidarlo si es un duplicado (RN-14).
+- Relacionar casos: duplicado (el mismo incidente cargado dos veces) o evento relacionado (mismo animal).
+- Ver un caso.
+- Ver estadísticas (revisando el diseño propuesto).
+
+SIRAM tiene dos caras: el **formulario público** (para todos) y el **backoffice** (solo personal interno).
+
+**Qué falta resolver para dar esas respuestas:** cómo detectar duplicados · cómo resolverlos ·
+la sección de casos por validar · la línea de tiempo de auditoría · el panel de gráficos de resumen
+(qué datos le sirven más al usuario) · el formulario público · la carga de CSV.
+
+> El pizarrón es una explicación semiformal, anterior a la terminología de este documento: donde dice
+> «desestimar (falso o duplicado)» o «relacionar (repetido, mismo atacante)» se lee como arriba.
 
 **Diseñado en el prototipo:** bandeja de casos, ficha del caso (50 campos + auditoría),
 comparar registros (duplicado vs. relacionado), cola de pendientes de validación, inicio con
 panel epidemiológico.
 **En curso:** panel con gráficos (R.30). **Pendiente:** mapa (R.22), importación CSV (R.25).
-**Fuera de esta etapa:** canal público ciudadano (R.17).
+**Fuera del primer sprint:** el formulario de denuncia del canal ciudadano (R.17). Sigue siendo parte
+de SIRAM y está en «qué falta resolver»: queda pendiente para mostrar, diseñar y codear en sprints
+posteriores. Su contenido se mantiene; **está en revisión si el formulario es público o privado** (§9).
 
 ---
 
@@ -301,8 +322,14 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
 
 - **Base:** Delta `modulos/servicios-publicos`, commit `9a4cbb6a`, en `/home/dddario/front/delta`
   (ver también `componentes/theme`, `componentes/base`, `componentes/modulo`). Los componentes
-  base de Delta envuelven paquetes npm privados (`@municipalidadushuaia/*`) que **no están
-  disponibles**: se hereda el contrato de uso, no la implementación.
+  base de Delta envuelven paquetes npm privados (`@municipalidadushuaia/*`: `componentes-base-ui`,
+  `formularios-rhf-mui`, `querys`, `micro-ux`, `utiles`, `calendario-headless`). **El equipo tiene
+  acceso para leerlos** (todavía no están en este entorno). Son **referencia, no dependencia**: de
+  ellos se toma el contrato de uso y el comportamiento, y SIRAM escribe sus propios componentes en su
+  repo. No se instalan ni se importan.
+- **Versiones de Delta (referencia):** React 18.2 · MUI 7.1 (`@mui/x-date-pickers` 8.1) ·
+  react-hook-form 7.43 · TanStack Query 5.75 · Vite 6.2. Si se mantienen o se actualizan, se
+  decide en el front (ver §9).
 - **Cáscara:** barra superior fija de 89 px; menú lateral de 240 px colapsable a 65 px; solo el
   contenido scrollea; sin breadcrumbs ni footer. Ítem activo = píldora `border-radius: 0 30px 30px 0`.
   **Dos niveles de menú, nunca tres.**
@@ -316,10 +343,15 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   bajo cada campo; la ayuda va en un ícono junto a la etiqueta, nunca como texto bajo el campo.
 - **Mensajes:** éxito/info se autocierran; advertencia/error exigen cierre manual.
 - **Tokens:** acento `#00776F`, tinta `#16211F`, fondo `#F6F7F7`; colores semánticos para los
-  ejes (ok, warn, crit, info, dup violeta, rel tierra). Todo color es un token. Tema claro y oscuro
-  completos; arranca según el sistema operativo y recuerda la elección.
+  ejes (ok, warn, crit, info, dup violeta, rel tierra). Todo color es un token.
+- **Tema oscuro: obligatorio, pero en una segunda pasada.** Primero se implementa una versión base
+  en tema claro. Después se agrega el oscuro revisando cada vista una por una. Desde el inicio todo
+  color pasa por un token, para que el oscuro sea redefinir tokens y no reescribir vistas. Al
+  terminar arranca según el sistema operativo y recuerda la elección.
 - **Tipografía:** Archivo (títulos), Source Sans 3 (cuerpo, **15 px base**), IBM Plex Mono
-  (datos y códigos). `tabular-nums` en fechas, DNI, edades y cantidades.
+  (datos y códigos). `tabular-nums` en fechas, DNI, edades y cantidades. Las tres son libres
+  (Google Fonts). Delta usa **Gotham**, que es una licencia comprada y no se puede usar fuera de Delta.
+- **Íconos:** un solo set para todo el producto, `@mui/icons-material` (el que usa Delta).
 - **Dos audiencias:** el panel interno (denso, eficiente) usa este lenguaje. El canal ciudadano
   (persona recién mordida) tendrá otra piel y otro tono, en una etapa posterior.
 
@@ -345,6 +377,14 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   *datos insuficientes* (es la marca Incompleto; desestimarlo generaría subregistro).
 - Qué es exactamente la «situación de la persona» (HZ11).
 - Si SIRAM guarda los datos del denunciante o solo los del lesionado (HZ07; el modelo ya soporta ambos).
+- **¿El formulario del canal ciudadano (R.17) es público o privado?** Su contenido se mantiene; solo
+  se revisa quién accede. Si pasa a privado, hay que revisar lo que hoy supone acceso sin cuenta: el
+  actor *Usuario externo* (§5), RN-07, RN-08, el origen `ciudadano` y la segunda audiencia de §8.
+- **¿Participa realmente Zoonosis?** (pizarrón 08/10)
+- **¿Qué denuncias se asocian a un caso?** ¿Solo las de Zoonosis, o también las de la policía? (hoy
+  la policía solo aparece como dato del caso: D2 «denuncia policial»)
+- **¿Hay problema en agregar el DNI al formulario?** RN-21 ya lo exige; falta que el cliente lo
+  acepte, en particular en el F1 (formulario público de Schiavini).
 - Reglas de visibilidad entre organismos (¿Zoonosis ve los casos de Salud?) y si un agente puede
   editar casos creados por otro organismo.
 - Criterio de «urgente» en la cola de validación (el prototipo muestra «Urgentes (3)» sin definirlo).
@@ -362,8 +402,12 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   traducción de cada formulario.
 
 **Pendientes técnicos (agente de código):**
-- Librería de UI y estructura del front. Se evaluó **Refine** (MIT; React Query + MUI + React Hook
-  Form, cercano a Delta) como candidato; **no está decidido**.
+- Librería de UI y estructura del front. Los componentes son propios, escritos tomando como
+  referencia los paquetes funcionales de Delta (§8). Se evaluó **Refine** (MIT; React Query + MUI +
+  React Hook Form, cercano a Delta) como base; **no está decidido**.
+- Versiones: ¿se arranca con las de Delta (React 18.2, MUI 7.1) o con las actuales? ¿Qué se gana y
+  qué se pierde? Como SIRAM no depende de los paquetes de Delta, no está atado a sus versiones;
+  usar las mismas solo facilita leer y copiar patrones.
 - Tecnología geográfica (RT.06) y servicio de geocodificación.
 
 ---
