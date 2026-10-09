@@ -242,6 +242,9 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
 - **RN-11 · Marcas (eje 3, paralelas):** incompleto · posible duplicado · posible evento
   relacionado. Conviven entre sí y con cualquier estado. (La marca «origen ciudadano sin verificar»
   se eliminó el 2026-10-08: un caso siempre lo registra un agente, así que nunca está «sin verificar».)
+  Las listas de trabajo (Incompletos, Posibles duplicados, Eventos relacionados y sus contadores)
+  muestran solo casos vigentes: sin `desestimado` ni `unificado`, igual que RN-28. Al consolidar,
+  la marca de posible duplicado se resuelve y desaparece. *(decisión de diseño, 2026-10-09)*
 - **RN-12 · Nunca colapsar los ejes en un solo campo**: se perdería información y la bandeja no
   podría filtrar por cada eje. En pantalla: estado = píldora en su columna; marcas = íconos
   pegados al identificador, a la izquierda.
