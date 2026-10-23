@@ -64,3 +64,27 @@ público queda en suspenso.
 - **`TIPO_DENUNCIA` → `TIPO_EVENTO`.** «Denuncia» ya nombra otra cosa (el trámite oficial); el
   catálogo clasifica el evento. La «T» de la matriz ya significaba «Tipo de evento». Valores
   propuestos y su deslinde con el tipo de lesión: CONTEXTO §9.
+
+## 2026-10-23 · Redefinición del dominio (hacia la versión 2)
+
+`siram.mmd` **no cambia todavía**: faltan definir DENUNCIA, COINCIDENCIA y los datos de cada ente, y
+no conviene pasarle al back un contrato a medio cerrar. Lo acordado, para volcar en la v2
+(detalle y porqué en CONTEXTO §3 y RN-20, RN-22, RN-27, RN-30 a RN-34):
+
+- **SOLICITUD** (nueva): lo que declaró un ciudadano, tal cual, en una tabla de staging. Estados
+  `pendiente|descartada|registrada`; referencia al caso (CASO 1 — 0..N SOLICITUD; registrada ⇔ tiene
+  caso); fechas de envío y de resolución; token del formulario detallado con vencimiento. Nunca
+  escribe en PERSONA ni en CASO sin un agente. Sin historial. Borrado lógico.
+- **CASO:** `canal_origen` (`ciudadano|salud|zoonosis|cadic`), que define la obligatoriedad al nacer
+  (RN-30). Ubicación: punto, dirección y referencias (cierra §7.6). Vuelve un campo de origen, que la
+  v1 había eliminado de DENUNCIA: ahora es del caso, no de la denuncia.
+- **PERSONA:** única por DNI (clave sustituta + `dni` único, nulo solo en históricos).
+- **DUEÑO:** relación opcional ANIMAL → PERSONA. No «denunciado».
+- **AUDITORIA → historial por entidad:** quién, organismo, cuándo, valor anterior y nuevo; la fila
+  viva es la última versión.
+- **Atención de Salud** (nueva): fecha de consulta, antirrábica, antitetánica, zona de mordedura,
+  antibiótico, sutura, observaciones; ligada a la víctima del caso (PARTICIPACION), no a PERSONA.
+  Absorbe L5–L7.
+- **Todo registro:** marca de tiempo de creación automática.
+- **DENUNCIA:** sin cambios hasta saber cómo la guardan los entes. **COINCIDENCIA:** en revisión
+  (motor nuevo).
