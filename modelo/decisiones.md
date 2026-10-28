@@ -88,3 +88,25 @@ no conviene pasarle al back un contrato a medio cerrar. Lo acordado, para volcar
 - **Todo registro:** marca de tiempo de creación automática.
 - **DENUNCIA:** sin cambios hasta saber cómo la guardan los entes. **COINCIDENCIA:** en revisión
   (motor nuevo).
+
+## 2026-10-28 · Pizarrón del equipo (hacia la versión 2)
+
+Fuente: `recursos/pizarron-2026-10-28/` (dos iteraciones). `siram.mmd` sigue sin cambiar. Detalle
+en CONTEXTO RN-20, RN-22 y RN-34.
+
+- **Muere PARTICIPACION.** Como hay una sola víctima por caso, CASO tiene `victima_persona_id`
+  (obligatoria) y `contacto_persona_id` (opcional, «contacto responsable»: quien registró en nombre
+  de la víctima). Se elimina `vinculo`: la relación entre ambos no importa. El denunciante oficial
+  no es un rol: es el DNI anotado en la denuncia. Reemplaza lo dicho el 23/10 sobre ligar el
+  tratamiento a «la víctima del caso (PARTICIPACION)».
+- **TRATAMIENTO** (Salud) se liga a CASO.
+- **ANIMAL pasa a tener identidad** (especie, chip). Se invierte RN-22. Relación N:M con CASO
+  mediante **CASO_ANIMAL**, que guarda lo que varía por caso: dueño durante el caso, tenencia (A5),
+  vacunado, observación del día 10. El DUEÑO del 23/10 (relación ANIMAL → PERSONA) pasa a ser
+  `CASO_ANIMAL.dueno_persona_id`, porque el dueño puede cambiar entre casos.
+- **DESCRIPCIÓN** (nueva, 1:1 con CASO_ANIMAL): rasgos físicos. Separada por opcionalidad en bloque,
+  ciclo de vida y cohesión; no por tamaño de tabla ni por permisos (se resuelven por campo en la API).
+- **Reconciliación de animales:** dos ANIMAL que resultan ser el mismo se unifican (mismo patrón que
+  `CASO.unificado_en_caso_id`); los casos apuntan al que sobrevive. Detalle del histórico a definir.
+- **Abierto:** certificado médico (¿entidad o solo archivo?, §7.4), A6 y A10 de la matriz, y si un
+  caso con varios animales finaliza cuando todos pasan el día 10.

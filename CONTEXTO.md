@@ -102,6 +102,7 @@ casos de ataques y mordeduras de **perros y gatos** a personas en Tierra del Fue
 | 08/10/2026 | Se habilita el código. Etapa actual: **cerrar el modelo de datos** antes de implementar |
 | 08/10/2026 | Pizarrón del equipo: qué propone SIRAM, qué falta resolver, dudas técnicas y de dominio (abajo) |
 | 23/10/2026 | Redefinición del dominio: cuatro canales de alta y el canal ciudadano vuelve como **solicitud** (ver «Narrativa de uso»). El modelo v2 queda en preparación (§7) |
+| 28/10/2026 | Pizarrón del equipo, dos iteraciones (`recursos/pizarron-2026-10-28/`): muere PARTICIPACION, el animal tiene identidad y su seguimiento por caso vive en CASO_ANIMAL (RN-20, RN-22) |
 
 **Qué propone SIRAM** (la respuesta a la necesidad, contada como narrativa de uso con ejemplos prácticos):
 - Seguir un caso a través de sus estados.
@@ -168,8 +169,12 @@ CSV (R.25).
 | **Denuncia** | Un acto **oficial del mundo real**: la persona (o alguien vinculado, p. ej. el padre por un hijo menor) denuncia el hecho ante un ente gubernamental (Zoonosis, policía…). SIRAM no la recibe ni la gestiona; si existe, **se anota en un caso que ya existe** (ente, número, fecha). **Nunca existe sola en SIRAM y no es un caso.** |
 | **Registro unificado** | El caso que sobrevive a una consolidación de duplicados, conservando la trazabilidad de los originales. |
 | **Persona** | Un ser humano con sus datos (nombre, **DNI obligatorio**, edad, contacto, domicilio). Independiente de su rol. **Única por DNI** en todo SIRAM (RN-20). |
-| **Participación** | El rol de una persona en un caso: **víctima** (el lesionado) o **denunciante** (quien hizo la denuncia oficial, p. ej. la madre por la hija mordida), con su vínculo. |
-| **Dueño** | La persona responsable del animal del caso. Se relaciona con el **animal**, no con el caso, y es opcional (callejero, desconocido). No se dice «denunciado»: no todo caso tiene denuncia. RN-22. |
+| **Víctima** | La persona atacada. **Una sola por caso**: dos víctimas del mismo ataque son dos casos. RN-20. |
+| **Contacto responsable** | La persona que registró el hecho en nombre de la víctima (p. ej. la madre por la hija), y a quien se contacta si la víctima no tiene contacto. Opcional: no existe si la víctima se registró sola. No se guarda la relación entre ambas. RN-20. *(Reemplaza a «Participación», eliminada el 2026-10-28.)* |
+| **Dueño** | La persona responsable del animal **durante el caso**. Vive en CASO_ANIMAL, porque puede cambiar entre un caso y otro; es opcional (callejero, desconocido). No se dice «denunciado»: no todo caso tiene denuncia. RN-22. |
+| **Animal** | La **identidad** de un animal (especie, chip). Puede aparecer en varios casos. RN-22. |
+| **CASO_ANIMAL** | Lo que se supo de un animal **en un caso**: descripción, dueño, tenencia, vacunación, observación del día 10. Un caso puede tener varios animales (p. ej. tres perros sueltos que atacan juntos). RN-22. |
+| **Descripción** | Los rasgos físicos del animal declarados en un caso (tamaño, sexo, edad aparente, color, raza…). Sirve a Zoonosis para identificarlo. No es parte del motor de coincidencias. RN-22. |
 | **Historial** | Las versiones anteriores de un registro: quién cambió qué, cuándo, desde qué organismo, valor anterior y nuevo. Reemplaza a la «auditoría». RN-27. |
 | **Coincidencia** | La sospecha, generada por el motor, de que dos casos están relacionados. Guarda tipo, puntaje 0–100, señales y la decisión del agente. *En revisión: el motor se rediseña (§6).* |
 | **Posible duplicado** | Coincidencia donde **coincide la persona**: el mismo incidente cargado dos veces. |
@@ -230,7 +235,8 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
   No hay denuncias sueltas, ni cola de denuncias, ni se crea un caso «desde» una denuncia. La
   denuncia se anota cuando se conoce: al registrar el caso (p. ej. Zoonosis tomó la denuncia y
   registra el caso) o después, cuando un agente contacta a la persona y verifica si denunció.
-  Se anota qué ente, número de trámite y fecha (H0) si se consiguen, y quién la hizo (RN-20).
+  Se anota qué ente, número de trámite y fecha (H0) si se consiguen, y quién la hizo (su DNI;
+  propuesta en revisión, §9).
 - **RN-06b · En SIRAM no existe el borrado.** Ni de casos ni de denuncias. La «baja» de un caso es el
   estado **Desestimado**; una denuncia mal anotada se corrige, con su rastro en la auditoría.
   *(decisión del equipo, 2026-10-08)* Vale también para las solicitudes: solo hay **borrado
@@ -295,8 +301,12 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
   tiene el dato y el otro no, se conserva el que lo tiene. *(P)*
 
 ### Personas, animal y datos
-- **RN-20 · Persona separada del rol.** Una persona puede ser víctima en un caso y denunciante en
-  otro. El modelo debe representar «la madre denuncia por la hija mordida». *(HZ07, DS)*
+- **RN-20 · Persona separada del rol.** Una persona puede ser víctima en un caso y contacto
+  responsable en otro. El modelo debe representar «la madre registra por la hija mordida». *(HZ07, DS)*
+  **Desde el 2026-10-28 los roles son dos FK del caso:** **víctima** (obligatoria, una por caso) y
+  **contacto responsable** (opcional). Muere PARTICIPACION, y con ella el campo `vinculo`: la
+  relación entre ambas personas no se guarda. Quien hizo la denuncia oficial no es un rol: queda
+  como DNI en la denuncia (§9).
   **La persona es única por DNI** (clave sustituta + DNI único; los históricos pueden no tenerlo):
   todos sus casos apuntan a ella, lo que permite listarlos. Un error de carga se propaga a todos,
   pero queda en el historial (RN-27) y se revierte. *(decisión 2026-10-23)*
@@ -306,12 +316,27 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
   R.17, si vuelve). **Única excepción: registros históricos** (p. ej. el formulario 2025 de R.18 o
   importaciones de datos viejos), que pueden no tenerlo. Esto deja atrás HZ01 para los datos nuevos.
   El DNI es la clave principal de deduplicación.
-- **RN-22 · El animal no tiene identidad entre casos.** Los datos son descriptivos, no
-  identificatorios. Lo que une dos casos del mismo perro es una coincidencia de tipo evento
-  relacionado **confirmada por una persona**. El sistema propone, no resuelve identidades. *(DS)*
-  El **dueño** es una persona relacionada con el animal del caso (no con el caso) y es opcional.
-  Absorbe H11 «conoce al propietario» y A6 «el dueño se responsabilizó» (a confirmar en el modelo v2).
-  *(decisión 2026-10-23)*
+- **RN-22 · El animal tiene identidad; lo que se sabe de él en cada caso vive en CASO_ANIMAL.**
+  *(decisión del equipo, 2026-10-28; reemplaza «el animal no tiene identidad entre casos», DS)*
+  - **ANIMAL** es la identidad: especie y **chip** (si lo tiene). Un animal puede aparecer en
+    varios casos, y un caso puede tener **varios animales** (p. ej. tres perros sueltos que atacan
+    juntos: cada uno tiene su propio seguimiento).
+  - **CASO_ANIMAL** (entidad asociativa) guarda lo que puede variar de un caso a otro: **dueño
+    durante el caso** (opcional), **tenencia** (A5: propio, ajeno conocido, desconocido),
+    **vacunado** y la **observación del día 10** (seguimiento de Zoonosis). Es el lugar del
+    criterio de `finalizado` en revisión (§9).
+  - **DESCRIPCIÓN** (1:1 con CASO_ANIMAL, entidad aparte): rasgos físicos declarados (tamaño,
+    sexo, edad aparente, color, raza…). Se separa por opcionalidad en bloque (un animal propio e
+    identificado puede no necesitarla), ciclo de vida (la carga la solicitud o el ente; el
+    seguimiento, Zoonosis) y cohesión (responde «¿cómo es?», no «¿qué pasó después?»). La usa
+    Zoonosis para identificar al animal; no es parte del motor de coincidencias.
+  - Un animal sin chip igual se registra, con su descripción.
+  - **Reconciliación de animales:** si Zoonosis descubre que dos ANIMAL son el mismo, uno absorbe
+    al otro con toda la información posible y los casos pasan a apuntar al que sobrevive. Nada se
+    borra (RN-06b); el absorbido deja de estar vigente y lo anterior pasa al histórico (detalle a
+    definir, §9). Mismo patrón que la consolidación de casos.
+  - Los permisos (p. ej. Salud no ve dueño ni descripción) se resuelven con control de acceso por
+    campo en la API, no partiendo tablas.
 - **RN-23 · «No sabe» es un valor, distinto de «sin dato».** «No sabe» = la persona respondió que
   no sabe. «Sin dato» = la pregunta no se respondió o no se hizo. Cada campo con escala necesita
   su valor desconocido explícito y tablas de equivalencia entre formularios
@@ -383,9 +408,11 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
 - **RN-34 · Cada ente completa el caso con datos de su dominio.** Los formularios de los entes
   difieren y suman al mismo caso. **Salud** registra la atención de la víctima: fecha de la
   consulta, vacuna antirrábica, antitetánica, zona de la mordedura, antibiótico, sutura y
-  observaciones. Se relaciona con la **víctima del caso** (su participación), no con la persona:
-  si colgara de la persona, se mezclarían los tratamientos de mordeduras distintas. Cubre L5–L7 de
-  §7.1. Falta relevar los datos propios de Zoonosis y CADIC.
+  observaciones. Se relaciona con el **caso**, no con la persona: si colgara de la persona, se
+  mezclarían los tratamientos de mordeduras distintas, y como hay una sola víctima por caso, el
+  caso identifica el tratamiento. *(2026-10-28; antes «la participación de la víctima»)* Cubre
+  L5–L7 de §7.1. Lo propio de Zoonosis es el seguimiento del animal (CASO_ANIMAL, RN-22). Falta
+  relevar lo de CADIC.
 
 ---
 
@@ -394,21 +421,25 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
 **Archivo canónico:** `modelo/siram.mmd` (versión 1, ver `modelo/decisiones.md`). Entidades: ORGANISMO, USUARIO, DENUNCIA,
 CASO, PARTICIPACION, PERSONA, ANIMAL, DOCUMENTO, TIPO_EVENTO, COINCIDENCIA, AUDITORIA.
 
-> **Modelo v2 en preparación (2026-10-23).** La narrativa nueva (§3) cambia el modelo: SOLICITUD
-> (nueva), DUEÑO del animal, PERSONA única por DNI, CASO con canal de origen y ubicación (punto,
-> dirección, referencias), historial por entidad en lugar de AUDITORIA, atención de Salud ligada a
-> la víctima del caso, y marca de tiempo de creación en todo registro. `siram.mmd` **no se actualiza
-> todavía**: faltan definir DENUNCIA, COINCIDENCIA y los datos de cada ente, y el modelo es el
-> contrato con el back.
+> **Modelo v2 en preparación (2026-10-23, ampliado 2026-10-28).** La narrativa nueva (§3) y el
+> pizarrón del 28/10 cambian el modelo: SOLICITUD (nueva); PERSONA única por DNI; muere
+> PARTICIPACION y CASO pasa a tener FK víctima (obligatoria) y FK contacto responsable (opcional);
+> CASO con canal de origen y ubicación (punto, dirección, referencias); ANIMAL con identidad (chip)
+> y CASO_ANIMAL (nueva, N animales por caso: dueño, tenencia, vacunado, observación del día 10) con
+> DESCRIPCIÓN (nueva, 1:1); TRATAMIENTO de Salud (nuevo) ligado al caso; historial por entidad en
+> lugar de AUDITORIA; marca de tiempo de creación en todo registro. `siram.mmd` **no se actualiza
+> todavía**: faltan definir DENUNCIA, COINCIDENCIA, el certificado médico y lo de CADIC, y el
+> modelo es el contrato con el back.
 
 El boceto ER original del equipo (`recursos/boceto-equipo/`) está **superado** y no rige.
 
 ### Brechas conocidas (a resolver en esta etapa)
 1. **16 campos de la matriz sin lugar propio** (D1–D3 se resolvieron con la denuncia anotada, RN-07):
    - Hecho: **H6 con quién estaba**, H7 iba con perros, **H8 actividad**, H9 tipo de interacción,
-     H10 testigos/observaciones, H11 conoce al propietario.
+     H10 testigos/observaciones, H11 conoce al propietario (→ tenencia en CASO_ANIMAL, RN-22).
    - Persona: P5 tarea si trabaja en la calle.
-   - Animal: A6 el dueño se responsabilizó, A8 vacuna antirrábica, A10 castrado, A11 puede identificarlo.
+   - Animal: A6 el dueño se responsabilizó, A8 vacuna antirrábica (→ vacunado en CASO_ANIMAL),
+     A10 castrado, A11 puede identificarlo (→ DESCRIPCIÓN). Ubicar A6 y A10 en el modelo v2.
    - Lesión: L5 sutura, L6 antibiótico, L7 vacuna antirrábica de la persona. → Van a la atención
      de Salud (RN-34).
    - Seguimiento: D4 volvió a verlo suelto, D5 comentarios.
@@ -417,7 +448,8 @@ El boceto ER original del equipo (`recursos/boceto-equipo/`) está **superado** 
 2. **Booleanos que no admiten «No sabe»** (`reincidente`, `atencion_medica`) — ver RN-23.
 3. ~~Fecha de la denuncia (H0)~~ Resuelta en v1: `DENUNCIA.fecha`.
 4. **DOCUMENTO sin atributos:** necesita al menos tipo (certificado médico, foto, denuncia policial),
-   archivo y fecha.
+   archivo y fecha. El pizarrón del 28/10 deja abierto el **certificado médico**: ¿se modela (con
+   sus datos) o solo se guarda el archivo?
 5. **Lote de importación:** la auditoría del prototipo cita «lote ZU-2026-09-12» y R.25 pide
    informar qué filas no entraron y por qué; no hay entidad que lo guarde.
 6. ~~**Coordenadas:** falta definir cuándo y cómo se geocodifica (H4 es texto libre en F1 y calle+número en F2).~~
@@ -429,7 +461,9 @@ El boceto ER original del equipo (`recursos/boceto-equipo/`) está **superado** 
 9. **Registro histórico:** RN-21 exige DNI salvo en registros históricos; el modelo tiene que poder
    distinguirlos (p. ej. por origen o lote de importación) para aplicar la obligatoriedad.
 10. **Vínculos entre casos:** COINCIDENCIA guarda la sospecha y la decisión; falta confirmar que
-   alcanza para representar el vínculo vigente (y su reversión) de un evento relacionado.
+   alcanza para representar el vínculo vigente (y su reversión) de un evento relacionado. Con el
+   animal con identidad (RN-22), dos casos que comparten un ANIMAL ya son del mismo animal: revisar
+   si eso reemplaza parte del vínculo.
 
 ---
 
@@ -491,6 +525,8 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   Si se confirma, hay que responder: qué pasa si el animal no se puede observar (ajeno, desconocido,
   no ubicado); qué pasa si muere o enferma en esos 10 días (no finaliza: es una alerta); y si
   «en observación» es un nuevo motivo de espera de `en_seguimiento`. No se modela hasta confirmarlo.
+  *(2026-10-28: la observación del día 10 ya tiene lugar en CASO_ANIMAL, RN-22. Con varios animales
+  por caso, ¿el caso finaliza cuando todos pasan el día 10?)*
 - **A CONFIRMAR · Lista de entes** donde se puede haber hecho una denuncia (Zoonosis, policía…).
 - **A DEFINIR · ¿Cuáles son las causas posibles para desestimar un caso?** Ninguna fuente las define.
   Propuesta inicial (sin aprobar), con motivo obligatorio + observación libre:
@@ -501,7 +537,8 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   Excluidos a propósito: *duplicado* (su desenlace es consolidar → `unificado`, RN-14) y
   *datos insuficientes* (es la marca Incompleto; desestimarlo generaría subregistro).
 - Qué es exactamente la «situación de la persona» (HZ11).
-- Si SIRAM guarda los datos del denunciante o solo los del lesionado (HZ07; el modelo ya soporta ambos).
+- ~~Si SIRAM guarda los datos del denunciante o solo los del lesionado (HZ07).~~ Guarda víctima y
+  contacto responsable (RN-20); del denunciante, solo el DNI en la denuncia. *(2026-10-28)*
 - ~~¿Vuelve el formulario público (R.17)?~~ Sí, como solicitud (RN-08, RN-31, RN-32). *(2026-10-23)*
 - **DENUNCIA: no se sabe cómo la guardan los entes** ni si tiene un identificador. No se modela el
   formulario real de la denuncia. **Propuesta en revisión** (2026-10-23), pensada para poder ubicar
@@ -516,24 +553,24 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
 
   DNI + fecha + ente funcionan como clave de búsqueda compuesta. Si falta alguno, la denuncia no se
   anota, pero el caso registra igual «¿hizo denuncia? → sí» (RN-07).
-- **Roles de las personas (propuesta en revisión, 2026-10-23).** Tres tipos: **víctima**,
-  **responsable** y **dueño** (del animal, RN-22). «Responsable» reemplaza a «denunciante» en
-  PARTICIPACION: es **quien registró el hecho** cuando no es la víctima (p. ej. la madre por la hija,
-  o un amigo de una víctima adulta), que no es necesariamente quien hizo la denuncia oficial (ese
-  queda como DNI en DENUNCIA). **La relación entre ambos no importa.** Si la víctima no tiene datos
-  de contacto, se contacta al responsable.
-  - Sin cubrir: (a) el nombre «responsable» sugiere estar «a cargo», y la definición no lo exige;
-    revisar si otro nombre la describe mejor (p. ej. «informante»). (b) Si la relación no importa,
-    ¿se elimina `PARTICIPACION.vinculo`? (c) Víctima y responsable se relacionan con el caso; el
-    dueño, con el animal: dos lugares distintos en el modelo v2.
+- ~~**Roles de las personas.**~~ Resuelto el 2026-10-28 (RN-20, RN-22): **víctima** y **contacto
+  responsable** son dos FK del caso; muere PARTICIPACION y con ella `vinculo` (la relación no
+  importa); el **dueño** va en CASO_ANIMAL. Lo que sigue vale igual:
   - El formulario inicial pregunta «¿Es usted quien sufrió el ataque?». Si sí, una sola persona
-    (víctima). Si no, se cargan los datos del responsable y además los de la víctima.
+    (víctima). Si no, se cargan los datos del contacto responsable y además los de la víctima.
   - De la víctima son obligatorios todos los datos del formulario inicial **salvo el contacto**
     (un niño no lo tiene). Lo que se mide en SIRAM son las víctimas y los ataques.
   - **Una víctima por caso:** dos víctimas del mismo ataque son dos casos (cada una tiene su
     seguimiento y su atención). Coincide con RN-14: los eventos relacionados se vinculan, nunca se
     fusionan.
 - **Datos propios de Zoonosis y CADIC** para completar un caso (los de Salud están en RN-34).
+- **CONSULTAR CON SALUD · Esquema de la vacuna antirrábica.** La profilaxis post-exposición es un
+  esquema de varias dosis en días distintos, no una sola. ¿Les interesa registrar el esquema
+  (dosis y fechas) o solo si se inició? Hoy el tratamiento lo trata como un sí/no. *(2026-10-28)*
+- **Observación del animal: solo el décimo día** (decidido 2026-10-28). Zoonosis registra si el
+  animal sigue bien al día 10, no el estado en cada visita; alcanza con una fila de CasoAnimal que
+  se actualiza. El registro por visita fue un supuesto sin base en el dominio y se descartó.
+  **Repreguntar en la segunda entrevista con Zoonosis**; puede cambiar según lo que respondan.
 - **Personas sin DNI argentino** (p. ej. turistas extranjeros mordidos en Ushuaia): RN-21 exige DNI
   y la validación de formato lo asume. ¿Pasaporte? ¿Tipo + número de documento? A futuro, no se
   resuelve ahora. *(2026-10-23)*
@@ -554,7 +591,9 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
 - **Motor de coincidencias nuevo** (lo diseña el equipo; después se compara con RN-16 a RN-18) y
   qué pasa con COINCIDENCIA y con el vínculo entre casos (§7.10). *(2026-10-23)*
 - **Historial en detalle:** revisarlo con casos de ejemplo; en particular, cómo se ve en un caso el
-  cambio de una persona compartida con otros casos (RN-20, RN-27).
+  cambio de una persona compartida con otros casos (RN-20, RN-27). **A definir (el equipo tiene una
+  propuesta, 2026-10-28):** cómo queda en el histórico un animal absorbido en una reconciliación
+  (RN-22).
 - **Obligatorio para nacer vs. para estar completo** (RN-25, RN-30).
 - **Retención de solicitudes descartadas:** el borrado lógico conserva DNI y contacto; la Ley 25.326
   pide minimización. ¿Plazo de retención?
@@ -606,3 +645,4 @@ prototipo › matriz de formularios › PDF de requerimientos.**
 | `modelo-er/siram-modelo-er.svg` (+ PNG) | Versión resumida del modelo para presentar (omite DOCUMENTO y TIPO_DENUNCIA) |
 | `boceto-equipo/Diagrama-Boceto.drawio` (+ PNG) | ER original del equipo. **Superado, solo antecedente histórico** |
 | `pizarron-2026-10-08/` | Fotos del pizarrón del equipo (08/10/2026): propuesta, lo que falta, dudas técnicas y de dominio. Semiformal, anterior a la terminología; destilado en §3, §8 y §9 |
+| `pizarron-2026-10-28/` | Modelo del equipo en pizarrón, dos iteraciones (azul y correcciones en rojo): muere Participación, Caso Animal, Descripción, Tratamiento, Certificado médico. Destilado en RN-20, RN-22, RN-34 y §7 |
