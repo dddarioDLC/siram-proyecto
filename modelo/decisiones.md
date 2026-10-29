@@ -110,3 +110,18 @@ en CONTEXTO RN-20, RN-22 y RN-34.
   `CASO.unificado_en_caso_id`); los casos apuntan al que sobrevive. Detalle del histórico a definir.
 - **Abierto:** certificado médico (¿entidad o solo archivo?, §7.4), A6 y A10 de la matriz, y si un
   caso con varios animales finaliza cuando todos pasan el día 10.
+
+## 2026-10-29 · Historial y reconciliación de animales (hacia la versión 2)
+
+`siram.mmd` sigue sin cambiar. Detalle en CONTEXTO RN-22, RN-27 y RN-35.
+
+- **Historial = una tabla espejo por entidad** (`<ENTIDAD>_HISTORICO`), en lugar de AUDITORIA. Cada
+  fila es una foto completa del registro más `operacion` (alta, modificación, baja lógica),
+  `fecha_hora`, `usuario_id` (nulo = Sistema), `organismo_id` (el del usuario **en ese momento**,
+  copiado porque el usuario puede cambiar de organismo) y `caso_contexto_id` (opcional: el cambio
+  puede hacerse fuera de un caso, p. ej. desde la vista de la persona). El delta anterior/nuevo se
+  deriva comparando fotos. En Django, `django-simple-history` implementa el patrón.
+- **ANIMAL:** `chip` único y opcional; nuevos `vigente` y `absorbido_por_animal_id` (FK a ANIMAL),
+  mismo patrón que `CASO.unificado_en_caso_id`. Sobrevive el que tiene chip; si ninguno, el más
+  viejo. Absorber repunta `CASO_ANIMAL.animal_id`; nada se borra ni se vacía.
+- **Permisos:** por fila y por campo, en el servidor (RN-35). No cambia el modelo.

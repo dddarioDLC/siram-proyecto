@@ -2,7 +2,7 @@
 
 > Fuente de verdad del dominio de SIRAM. La leen el agente de diseño y el de backend; el front recibe
 > solo lo que necesita en `front/docs/` (ver §1).
-> Última actualización: 2026-10-23. Lo mantiene el agente de diseño (ver §1).
+> Última actualización: 2026-10-29. Lo mantiene el agente de diseño (ver §1).
 
 ---
 
@@ -103,6 +103,7 @@ casos de ataques y mordeduras de **perros y gatos** a personas en Tierra del Fue
 | 08/10/2026 | Pizarrón del equipo: qué propone SIRAM, qué falta resolver, dudas técnicas y de dominio (abajo) |
 | 23/10/2026 | Redefinición del dominio: cuatro canales de alta y el canal ciudadano vuelve como **solicitud** (ver «Narrativa de uso»). El modelo v2 queda en preparación (§7) |
 | 28/10/2026 | Pizarrón del equipo, dos iteraciones (`recursos/pizarron-2026-10-28/`): muere PARTICIPACION, el animal tiene identidad y su seguimiento por caso vive en CASO_ANIMAL (RN-20, RN-22) |
+| 29/10/2026 | Historial con tablas espejo (RN-27), reconciliación de animales (RN-22), permisos en el servidor por fila y por campo (RN-35), Personas y Animales en Consultas (§8) |
 
 **Qué propone SIRAM** (la respuesta a la necesidad, contada como narrativa de uso con ejemplos prácticos):
 - Seguir un caso a través de sus estados.
@@ -332,11 +333,20 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
     Zoonosis para identificar al animal; no es parte del motor de coincidencias.
   - Un animal sin chip igual se registra, con su descripción.
   - **Reconciliación de animales:** si Zoonosis descubre que dos ANIMAL son el mismo, uno absorbe
-    al otro con toda la información posible y los casos pasan a apuntar al que sobrevive. Nada se
-    borra (RN-06b); el absorbido deja de estar vigente y lo anterior pasa al histórico (detalle a
-    definir, §9). Mismo patrón que la consolidación de casos.
+    al otro y los casos pasan a apuntar al que sobrevive. Mismo patrón que el caso `unificado`
+    (RN-09). *(detalle 2026-10-29)*
+    - Es **manual**. El disparador típico es el chip único: al cargarle a un animal un chip que ya
+      tiene otro, la base lo rechaza y un agente compara los dos registros. (El chip es único pero
+      opcional: muchos animales pueden no tenerlo.)
+    - **Sobrevive el que tiene chip.** Si ninguno lo tiene, el más viejo: sin chip, ANIMAL solo
+      guarda la especie, así que la elección no cambia datos y basta un desempate fijo.
+    - **El absorbido no se borra ni se vacía** (RN-06b): conserva sus datos, deja de estar vigente
+      y apunta al que lo absorbió (`absorbido_por`).
+    - Absorber es, sobre todo, **repuntar la FK de CASO_ANIMAL** al sobreviviente. La descripción
+      vive en CASO_ANIMAL / DESCRIPCIÓN, así que no se pierde. Cada cambio queda en el historial de
+      su entidad (RN-27): así un caso sabe por qué su animal ahora es otro.
   - Los permisos (p. ej. Salud no ve dueño ni descripción) se resuelven con control de acceso por
-    campo en la API, no partiendo tablas.
+    campo en la API, no partiendo tablas (RN-35).
 - **RN-23 · «No sabe» es un valor, distinto de «sin dato».** «No sabe» = la persona respondió que
   no sabe. «Sin dato» = la pregunta no se respondió o no se hizo. Cada campo con escala necesita
   su valor desconocido explícito y tablas de equivalencia entre formularios
@@ -356,12 +366,33 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
   y su organismo, **valor anterior y valor nuevo**. *(R.29, DS)* La fila viva es la última versión;
   las anteriores pasan a un historial **por entidad** (caso, persona, animal…). Reemplaza la entidad
   AUDITORIA. Todo registro guarda además su marca de tiempo de creación, automática. El volumen
-  (≈200 casos/año) no es un problema. *(decisión 2026-10-23; detalle pendiente, §9)*
+  (≈200 casos/año) no es un problema. *(decisión 2026-10-23)*
+  **Forma del historial** *(decisión del equipo, 2026-10-29)*: una **tabla espejo** por entidad
+  (CasoHistorico, PersonaHistorico, CasoAnimalHistorico…), el patrón de `django-simple-history`.
+  - Cada fila es la **foto completa** del registro (*snapshot*), no solo el campo que cambió: así se
+    responde «¿cómo estaba el día X?» con una lectura. El valor anterior y el nuevo se obtienen
+    comparando dos fotos seguidas.
+  - Cada fila guarda además: **tipo de operación** (creación, modificación, baja lógica), fecha y
+    hora, **usuario** (o «Sistema») y el **organismo del usuario en ese momento**, copiado en la
+    fila: el usuario puede cambiar de organismo, y una fila de historial nunca se edita.
+  - **Caso de contexto, opcional:** desde qué caso se hizo el cambio. Es opcional porque una persona
+    o un animal también se editan desde su propia vista (§8, Consultas). Así, en un caso se ve si el
+    cambio de una persona compartida se hizo ahí o en otro lado (RN-20).
+  - La creación también escribe una fila. El borrado no existe (RN-06b).
 - **RN-28 · Las estadísticas se calculan sobre los casos vigentes:** se excluyen los `desestimado`
   y los `unificado` (estos ya están contados en el caso que los absorbió). *(decisión del equipo,
   2026-10-08; reemplaza «solo casos validados», que venía del formulario público)*
 - **RN-29 · Datos sensibles** (DNI, historia clínica, contacto) protegidos según Ley 25.326. *(R.16)*
   Acceso por organismo + rol + permisos. *(R.03, R.21)*
+- **RN-35 · Los permisos se aplican en el servidor, en dos dimensiones.** *(propuesta del equipo,
+  2026-10-29; las reglas concretas se validan con el cliente, §9)*
+  - **Por fila:** qué registros ve cada organismo y rol (en DRF, `get_queryset`).
+  - **Por campo:** qué datos de cada registro ve (en DRF, el serializer según el rol). P. ej.
+    Zoonosis ve **todas** las personas, porque busca víctimas para completar el contacto
+    (narrativa, paso 6), y lo que no deba ver se recorta por campo.
+  - **El front muestra lo que llega** y no decide por rol: si un campo no vino, la sección no se
+    muestra. La regla vive en un solo lugar (el back) y el front no necesita conocer el modelo (§1).
+    Ocultar algo solo en pantalla no lo protege.
 
 ### Canales de alta y solicitudes *(decisión del equipo, 2026-10-23)*
 - **RN-30 · Obligatoriedad del formulario inicial por canal.**
@@ -449,7 +480,8 @@ El boceto ER original del equipo (`recursos/boceto-equipo/`) está **superado** 
 3. ~~Fecha de la denuncia (H0)~~ Resuelta en v1: `DENUNCIA.fecha`.
 4. **DOCUMENTO sin atributos:** necesita al menos tipo (certificado médico, foto, denuncia policial),
    archivo y fecha. El pizarrón del 28/10 deja abierto el **certificado médico**: ¿se modela (con
-   sus datos) o solo se guarda el archivo?
+   sus datos) o solo se guarda el archivo? *(2026-10-29: lo más probable es que sea solo una
+   referencia al archivo; sin cerrar.)*
 5. **Lote de importación:** la auditoría del prototipo cita «lote ZU-2026-09-12» y R.25 pide
    informar qué filas no entraron y por qué; no hay entidad que lo guarde.
 6. ~~**Coordenadas:** falta definir cuándo y cómo se geocodifica (H4 es texto libre en F1 y calle+número en F2).~~
@@ -485,8 +517,12 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   contenido scrollea; sin breadcrumbs ni footer. Ítem activo = píldora `border-radius: 0 30px 30px 0`.
   **Dos niveles de menú, nunca tres.**
 - **Navegación:** Inicio (panel epidemiológico) · Casos (Bandeja, Nuevo caso,
-  Posibles duplicados, Eventos relacionados, Incompletos) · Consultas (Búsqueda, Mapa,
-  Estadísticas, Exportar) · Administración (Usuarios, Organismos, Tipos de evento, Importar CSV).
+  Posibles duplicados, Eventos relacionados, Incompletos) · Consultas (Búsqueda, Personas, Animales,
+  Mapa, Estadísticas, Exportar) · Administración (Usuarios, Organismos, Tipos de evento, Importar CSV).
+  Personas y Animales van en Consultas porque se **consultan**, no se trabajan (lo único que SIRAM
+  trabaja es el caso). Patrón lista–detalle: la tabla tiene pocas columnas (nombre, cantidad de casos)
+  y el detalle muestra los datos y **todos sus casos** (RN-20, RN-22). DNI y contacto, solo en el
+  detalle (minimización, RN-29). *(2026-10-29)*
   Los casos van al centro; la configuración al final.
 - **Ventanas:** crear/editar/confirmar abren un **drawer lateral** (50 % escritorio, 100 % teléfono),
   Cancelar a la izquierda y Guardar a la derecha. Guardar deshabilitado hasta que haya cambios.
@@ -582,7 +618,9 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
 - **¿Hay problema en agregar el DNI al formulario?** RN-21 ya lo exige; falta que el cliente lo
   acepte, en particular en el F1 (formulario público de Schiavini).
 - Reglas de visibilidad entre organismos (¿Zoonosis ve los casos de Salud?) y si un agente puede
-  editar casos creados por otro organismo.
+  editar casos creados por otro organismo. El mecanismo ya está propuesto (RN-35, por fila y por
+  campo); faltan las reglas concretas. Llevar a la entrevista con Salud: ¿le sirve ver la
+  observación del día 10 del animal? Puede cambiar el tratamiento antirrábico de la víctima.
 - Qué hacer con «Mal estado de ADC» y «Otros» del F2 (HZ03); «Conoce al propietario del domicilio» (HZ16).
 - Formato real de entrada: export del F1 (HZ13, HZ14), transcripción del F2 en papel (HZ12), y el F3.
 - 2FA (R.05) y políticas de seguridad (Ley 25.326): sin definir.
@@ -590,10 +628,10 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
 **Pendientes de diseño (agente de diseño):**
 - **Motor de coincidencias nuevo** (lo diseña el equipo; después se compara con RN-16 a RN-18) y
   qué pasa con COINCIDENCIA y con el vínculo entre casos (§7.10). *(2026-10-23)*
-- **Historial en detalle:** revisarlo con casos de ejemplo; en particular, cómo se ve en un caso el
-  cambio de una persona compartida con otros casos (RN-20, RN-27). **A definir (el equipo tiene una
-  propuesta, 2026-10-28):** cómo queda en el histórico un animal absorbido en una reconciliación
-  (RN-22).
+- ~~**Historial en detalle**~~ Resuelto el 2026-10-29: tablas espejo con foto completa, organismo
+  del momento y caso de contexto opcional (RN-27); animal absorbido (RN-22). Falta diseñar la
+  **pantalla de historial**: va a ser una pantalla propia (decidido 2026-10-29), sin definir todavía.
+- **Estados del caso:** revisarlos junto con la narrativa general (RN-09, RN-10). *(2026-10-29)*
 - **Obligatorio para nacer vs. para estar completo** (RN-25, RN-30).
 - **Retención de solicitudes descartadas:** el borrado lógico conserva DNI y contacto; la Ley 25.326
   pide minimización. ¿Plazo de retención?
