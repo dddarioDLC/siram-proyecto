@@ -43,6 +43,10 @@ Lo mantiene el agente de diseño.
 
 ## 2026-10-08 · Versión 1: SIRAM trata casos
 
+> **Nota (2026-10-29):** la v1 se planteó y se escribió en `siram.mmd`, pero **nunca se publicó**
+> (no tiene tag `modelo-v1`) y quedó superada por la v2 (entradas desde el 2026-10-23). Se conserva
+> como registro de lo que se decidió en ese momento.
+
 Narrativa acordada por el equipo (CONTEXTO §3, «Narrativa de uso»): el caso lo registra siempre un
 agente interno, que carga los datos por la persona; la denuncia es un acto oficial del mundo real
 ante un ente (Zoonosis, policía…) y SIRAM solo la anota en un caso que ya existe. El formulario
@@ -125,3 +129,64 @@ en CONTEXTO RN-20, RN-22 y RN-34.
   mismo patrón que `CASO.unificado_en_caso_id`. Sobrevive el que tiene chip; si ninguno, el más
   viejo. Absorber repunta `CASO_ANIMAL.animal_id`; nada se borra ni se vacía.
 - **Permisos:** por fila y por campo, en el servidor (RN-35). No cambia el modelo.
+- **DENUNCIA: ente, fecha y DNI del denunciante obligatorios; número opcional.** Se anota la denuncia
+  real, y sin fecha no se puede ubicar en el sistema del ente. Reemplaza el «si se consiguen» de
+  RN-06 (2026-10-08). La fecha es la de la denuncia (H0), no la del hecho ni la de registro del caso.
+- **Creación y última modificación automáticas en todas las entidades** (CASO, PERSONA, ANIMAL,
+  CASO_ANIMAL, DESCRIPCIÓN, TRATAMIENTO, DENUNCIA, SOLICITUD, DOCUMENTO, COINCIDENCIA, ORGANISMO,
+  USUARIO, TIPO_EVENTO), salvo las tablas de historial. La última modificación repite lo que ya dice
+  el historial, pero ahorra consultarlo para ordenar o mostrar la fecha de novedad; la escribe la base
+  y nadie la edita, así que el riesgo de que no coincidan es casi nulo (si pasa, gana el historial). En
+  SOLICITUD, que no tiene historial, es el único dato de cuándo se tocó. Amplía la «marca de tiempo de
+  creación» del 23/10.
+- **ORGANISMO, USUARIO y TIPO_EVENTO también llevan tabla espejo.** Cambian poco y el costo es bajo;
+  en USUARIO es trazabilidad de accesos (RN-29). El historial de USUARIO excluye las credenciales
+  (hash de contraseña, secretos de 2FA).
+- **TIPO_EVENTO se mantiene**, un valor por caso: ataque con mordedura · lesión compatible · intento
+  sin lesión · lesión derivada. Pendiente de confirmar los valores, el deslinde con el tipo de lesión
+  (L1) y si es catálogo o enumerado (CONTEXTO §9).
+- **DENUNCIA: solo de Zoonosis.** Solo Zoonosis anota denuncias, y solo las hechas en Zoonosis; Salud,
+  CADIC y el canal ciudadano no la tocan. La policía no se modela (podría sumarse muy a futuro). Como
+  el ente es siempre Zoonosis, deja de ser un campo a cargar.
+- **CASO.hizo_denuncia (D1) y CASO.motivo_no_denuncia (D3) se mantienen, como dato declarado** por la
+  persona. **Solo los carga el canal ciudadano**: llegan en la solicitud y se copian al caso al
+  registrarla; ningún agente los carga ni los modifica (RN-35). Sin solicitud, quedan sin dato. No
+  conviene que los cargue otro canal: es una declaración de la persona y no hay motivo para que un
+  agente la reemplace. Con varias solicitudes en desacuerdo, gana la más reciente (solo para estos
+  dos campos). Vienen del F1 de Schiavini y miden el subregistro. No se
+  derivan de DENUNCIA ni la reemplazan: se pueden cruzar. D2 (denuncia policial) se elimina.
+- **A7 domicilio o zona del animal → CASO_ANIMAL** (dónde vive el animal; puede cambiar entre casos).
+  En la v1 era `ANIMAL.zona_domicilio`.
+- **Se descartan de la matriz:** P5, H6, H7, H8, H9, H10, H11, A6, A10, D4, D5, X3. H10: por ahora no
+  hacen falta observaciones sobre el caso.
+- **Observaciones opcionales en DENUNCIA y en CASO_ANIMAL.** En DENUNCIA, para la gente de Zoonosis (el
+  F2 tiene ese campo). En CASO_ANIMAL, observaciones generales del seguimiento del animal (p. ej. «está
+  dentro de un terreno al que no tenemos acceso»), distintas de la observación del día 10. Las carga
+  Zoonosis.
+- **TRATAMIENTO es solo de Salud**, incluidos L5–L7. El ciudadano no los declara.
+- **L4 «recibió atención médica» se deriva** de que el caso tenga un TRATAMIENTO. Sale
+  `CASO.atencion_medica` de la v1.
+- **X1 certificado médico:** DOCUMENTO del caso, lo carga Zoonosis. Que lo adjunte el ciudadano es
+  posible pero improbable; no se diseña por ahora.
+- **X2 fotos:** las del animal se adjuntan a CASO_ANIMAL (ayudan a identificarlo); las del lugar se
+  descartan.
+- **A12 mordedor reincidente se descarta.** La reincidencia dentro de SIRAM se ve en los casos del
+  animal. Sale `ANIMAL.reincidente` de la v1.
+- **La marca Incompleto mide solo los campos del CASO.** Lo que falte en CASO_ANIMAL no la afecta: un
+  caso puede resolverse del todo sin que sus animales tengan todo cargado. «Animal propio/ajeno» sale
+  de los obligatorios de RN-25 (es la tenencia de CASO_ANIMAL).
+- **Zona del cuerpo solo en TRATAMIENTO** (Salud). La info del caso y la de Salud van por separado;
+  se acepta que los casos sin paso por Salud no la tengan. Sale `CASO.zona_cuerpo` de la v1.
+- **Gravedad de la lesión (L2) en TRATAMIENTO.** Dato clínico. Sale `CASO.gravedad` de la v1.
+- **`CASO.canal_origen` suma `historico`** (`ciudadano|salud|zoonosis|cadic|historico`). Marca los
+  registros viejos o importados: justifica que el caso no tenga DNI (RN-21) y sirve de filtro. Cierra
+  la brecha §7.9.
+- **USUARIO: activo / inactivo.** No se borra (lo referencian casos e historial); el administrador lo
+  desactiva y lo puede reactivar. La desactivación es una baja lógica en el historial.
+- **Fecha de novedad de la bandeja = última modificación del caso** (campo automático), en lugar de
+  derivarla de AUDITORIA. La ficha del caso ya no incluye el historial: lleva un acceso a su pantalla.
+- **A11 «¿podría identificar al animal?» se queda**, en CASO_ANIMAL. Es una pregunta del formulario
+  detallado del ciudadano; el diseño de ese formulario (secciones, preguntas) se decide más adelante.
+- **RN-25 pierde «situación de la persona».** La Entrevista 1 la pedía sin definirla y su mapeo a
+  H6/H8 era inferido (HZ11); con ambos descartados, sale de los obligatorios del caso. Cae también la
+  equivalencia de «con quién estaba» (RN-24, HZ09).
